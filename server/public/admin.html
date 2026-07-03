@@ -206,12 +206,19 @@ function switchPage(name){
 // ─── Dashboard charts ───
 function initCharts(){
   echarts.init(document.getElementById('cRadar')).setOption({
+    tooltip:{trigger:'item',formatter:function(p){
+      var html='<b>'+p.seriesName+'</b><br/>';
+      var names=['马力','扭矩(Nm)','极速km/h','0-100s','下压力kg'];
+      var vals=p.value;
+      for(var i=0;i<names.length;i++) html+=names[i]+': '+vals[i]+'<br/>';
+      return html;
+    }},
     radar:{center:['50%','52%'],radius:'65%',
       indicator:[{name:'马力',max:1500},{name:'扭矩(Nm)',max:1200},{name:'极速km/h',max:350},{name:'0-100s',max:3.5},{name:'下压力kg',max:500}],
     axisName:{color:'#9CA0B0',fontSize:11},splitArea:{areaStyle:{color:['rgba(255,188,10,0.04)','rgba(255,188,10,0.10)']}},
     splitLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
     series:[{type:'radar',data:[{value:[1244,1155,301,2.7,450],name:'Venom GT'}],areaStyle:{color:'rgba(255,188,10,0.25)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'},
-      label:{show:true,color:'#F0F1F4',fontSize:10,fontWeight:'bold',formatter:function(p){return p.value}}}
+      emphasis:{lineStyle:{width:3,color:'#FFBC0A'},areaStyle:{color:'rgba(255,188,10,0.4)'}}}
     ],
     animationDuration:800,animationEasing:'elasticOut'
   });
@@ -328,12 +335,18 @@ function initMockCharts(){
     });mockCharts.push(ch);
   }
 
-  // 4. 超跑性能雷达 — 选 4 款标杆车型 + 图例 + 数值
+  // 4. 超跑性能雷达 — 选 4 款标杆车型 + 图例 + hover 显示
   el=document.getElementById('mRadar');if(el){
     var flagships=['Hennessy Venom GT','Bugatti Chiron','Rimac Nevera','Koenigsegg Jesko'];
     var rd=data.filter(function(d){return flagships.indexOf(d.name)>=0});
     var colorPalette=['#FFBC0A','#D99A00','#38BDF8','#EF4444'];
     var ch=echarts.init(el);ch.setOption({
+      tooltip:{trigger:'item',formatter:function(p){
+        var indicators=['马力','扭矩(Nm)','极速(km/h)','轻量化','性价比'];
+        var html='<b>'+p.seriesName+'</b><br/>';
+        for(var i=0;i<indicators.length;i++) html+=indicators[i]+': '+p.value[i]+'<br/>';
+        return html;
+      }},
       legend:{data:rd.map(function(d){return d.name.split(' ').slice(0,2).join(' ')}),
         textStyle:{color:'#9CA0B0',fontSize:10},top:0,left:'center',itemWidth:14,itemHeight:8},
       radar:{center:['50%','55%'],radius:'60%',
@@ -345,7 +358,7 @@ function initMockCharts(){
         lineStyle:{color:colorPalette[i],width:2},
         areaStyle:{color:colorPalette[i],opacity:0.08},
         itemStyle:{color:colorPalette[i]},
-        label:{show:true,color:colorPalette[i],fontSize:9,formatter:function(p){return p.value}}
+        emphasis:{lineStyle:{width:3,color:colorPalette[i]},areaStyle:{opacity:0.2}}
       }}),animationDuration:800,animationEasing:'elasticOut'}]
     });mockCharts.push(ch);
   }
