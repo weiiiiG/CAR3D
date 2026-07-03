@@ -134,13 +134,13 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
   <h1>数据概览</h1>
   <div class="subtitle">所有视角数据的详细展示 + Mock 数据集</div>
   <div class="charts-row" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="chart-card"><h3>气缸数对比</h3><div class="chart-box-sm" id="mBar1"></div></div>
+    <div class="chart-card"><h3>马力对比</h3><div class="chart-box-sm" id="mBar1"></div></div>
     <div class="chart-card"><h3>0-100加速</h3><div class="chart-box-sm" id="mBar2"></div></div>
-    <div class="chart-card"><h3>整备质量</h3><div class="chart-box-sm" id="mPie1"></div></div>
+    <div class="chart-card"><h3>车型分类</h3><div class="chart-box-sm" id="mPie1"></div></div>
   </div>
   <div class="charts-row" style="grid-template-columns:1fr 1fr">
     <div class="chart-card"><h3>超跑性能雷达</h3><div class="chart-box" id="mRadar"></div></div>
-    <div class="chart-card"><h3>赛道圈速 (秒)</h3><div class="chart-box" id="mLine"></div></div>
+    <div class="chart-card"><h3>极速对比</h3><div class="chart-box" id="mLine"></div></div>
   </div>
   <div class="data-table-wrap" style="margin-top:16px">
     <div class="table-head"><h3>Mock 数据 · 超跑参数对比</h3></div>
@@ -254,59 +254,91 @@ function initThreePreview(){
 
 // ─── Mock Charts (Data Overview page) ───
 var mockCharts=[];
+var mockData=[];
+
 function initMockCharts(){
-  // 销毁旧实例
   mockCharts.forEach(function(c){try{c.dispose()}catch(e){}});
   mockCharts=[];
-  try {
-    var el,ch;
-    el=document.getElementById('mBar1');if(el){ch=echarts.init(el);ch.setOption({
-      xAxis:{type:'category',data:['Venom GT','Agera RS','Chiron','Jesko'],axisLabel:{color:'#9CA0B0',fontSize:9,interval:0},axisLine:{show:false}},
-      yAxis:{show:false},series:[{type:'bar',data:[8,8,16,8],itemStyle:{color:function(p){return['#FFBC0A','#D99A00','#6B7280','#2D3040'][p.dataIndex]}}}],grid:{top:12,bottom:24,left:8,right:8}
-    });mockCharts.push(ch)}
-    el=document.getElementById('mBar2');if(el){ch=echarts.init(el);ch.setOption({
-      xAxis:{type:'category',data:['Venom GT','Agera RS','Chiron','Jesko'],axisLabel:{color:'#9CA0B0',fontSize:9,interval:0},axisLine:{show:false}},
-      yAxis:{show:false},series:[{type:'bar',data:[2.7,2.8,2.4,2.5],itemStyle:{color:function(p){return['#FFBC0A','#D99A00','#6B7280','#2D3040'][p.dataIndex]}}}],grid:{top:12,bottom:24,left:8,right:8}
-    });mockCharts.push(ch)}
-    el=document.getElementById('mPie1');if(el){ch=echarts.init(el);ch.setOption({
-      series:[{type:'pie',radius:['30%','50%'],data:[
-        {value:1350,name:'Venom GT',itemStyle:{color:'#FFBC0A'}},{value:1395,name:'Agera RS',itemStyle:{color:'#D99A00'}},
-        {value:1995,name:'Chiron',itemStyle:{color:'#6B7280'}},{value:1420,name:'Jesko',itemStyle:{color:'#2D3040'}}],
-      label:{color:'#9CA0B0',fontSize:10}}]
-    });mockCharts.push(ch)}
-    el=document.getElementById('mRadar');if(el){ch=echarts.init(el);ch.setOption({
-      radar:{indicator:[{name:'马力',max:2000},{name:'扭矩',max:1800},{name:'极速',max:500},{name:'下压力',max:800},{name:'轻量化',max:10}],
+  // 从 API 获取数据（若无则用空数组）
+  var data=mockData;
+  if(!data.length)return;
+
+  // 1. 马力对比 — 柱状图取前 8
+  var el=document.getElementById('mBar1');if(el){
+    var sorted=data.slice().sort(function(a,b){return b.hp-a.hp}).slice(0,8);
+    var ch=echarts.init(el);ch.setOption({
+      tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>马力: '+p[0].value+' hp'}},
+      xAxis:{type:'category',data:sorted.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:9,interval:0,rotate:20},axisLine:{show:false}},
+      yAxis:{type:'value',name:'hp',nameTextStyle:{color:'#5C5F6E',fontSize:9},axisLabel:{color:'#5C5F6E',fontSize:8},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+      series:[{type:'bar',data:sorted.map(function(d,i){return{value:d.hp,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:24,label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:'{c}'}}],
+      grid:{top:12,bottom:36,left:36,right:8}
+    });mockCharts.push(ch);
+  }
+
+  // 2. 0-100加速 — 柱状图取前 8（升序 = 快的在前）
+  el=document.getElementById('mBar2');if(el){
+    var sorted2=data.slice().sort(function(a,b){return a.acceleration-b.acceleration}).slice(0,8);
+    var ch=echarts.init(el);ch.setOption({
+      tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>0-100km/h: '+p[0].value+'s'}},
+      xAxis:{type:'category',data:sorted2.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:9,interval:0,rotate:20},axisLine:{show:false}},
+      yAxis:{type:'value',name:'秒',nameTextStyle:{color:'#5C5F6E',fontSize:9},axisLabel:{color:'#5C5F6E',fontSize:8},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+      series:[{type:'bar',data:sorted2.map(function(d,i){return{value:d.acceleration,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:24,label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:function(p){return p.value+'s'}}}],
+      grid:{top:12,bottom:36,left:32,right:8}
+    });mockCharts.push(ch);
+  }
+
+  // 3. 车型分类 — 饼图（燃油/混动/电动占比）
+  el=document.getElementById('mPie1');if(el){
+    var catMap={};data.forEach(function(d){catMap[d.category]=(catMap[d.category]||0)+1});
+    var pieData=Object.keys(catMap).map(function(k){return{name:k,value:catMap[k]}});
+    var colors={'燃油':'#FFBC0A','混动':'#D99A00','电动':'#38BDF8'};
+    var ch=echarts.init(el);ch.setOption({
+      tooltip:{trigger:'item',formatter:'{b}: {c} 款 ({d}%)'},
+      series:[{type:'pie',radius:['25%','50%'],data:pieData.map(function(d){return{name:d.name,value:d.value,itemStyle:{color:colors[d.name]||'#6B7280'}}}),
+      label:{color:'#9CA0B0',fontSize:10,formatter:'{b}\n{d}%'},emphasis:{label:{fontSize:12,fontWeight:'bold'}}}],
+      grid:{top:4,bottom:4,left:4,right:4}
+    });mockCharts.push(ch);
+  }
+
+  // 4. 超跑性能雷达 — 选 4 款标杆车型
+  el=document.getElementById('mRadar');if(el){
+    var flagships=['Hennessy Venom GT','Bugatti Chiron','Rimac Nevera','Koenigsegg Jesko'];
+    var rd=data.filter(function(d){return flagships.indexOf(d.name)>=0});
+    var ch=echarts.init(el);ch.setOption({
+      radar:{indicator:[{name:'马力',max:2000},{name:'扭矩(Nm)',max:2500},{name:'极速(km/h)',max:500},{name:'轻量化(分)',max:10},{name:'性价比(分)',max:10}],
       axisName:{color:'#9CA0B0',fontSize:10},splitArea:{areaStyle:{color:['rgba(255,188,10,0.03)','rgba(255,188,10,0.08)']}},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
-      series:[{type:'radar',data:[
-        {value:[1244,1155,301,450,7.5],name:'Venom GT'},{value:[1360,1011,447,610,6.8],name:'Agera RS'},
-        {value:[1579,1600,420,500,4.5],name:'Chiron'},{value:[1603,1500,483,700,7.2],name:'Jesko'}],
-      areaStyle:{opacity:0.05},lineStyle:{width:1.5}}]
-    });mockCharts.push(ch)}
-    el=document.getElementById('mLine');if(el){ch=echarts.init(el);ch.setOption({
-      xAxis:{type:'category',data:['Spa','Nürburgring','Laguna Seca','Monza','Silverstone'],axisLabel:{color:'#9CA0B0',fontSize:10,interval:0},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
-      yAxis:{type:'value',name:'秒',nameTextStyle:{color:'#5C5F6E',fontSize:10},axisLabel:{color:'#5C5F6E',fontSize:9},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
-      series:[{type:'line',data:[132.5,398.0,87.5,118.2,96.8],smooth:true,lineStyle:{color:'#FFBC0A',width:2},areaStyle:{color:'rgba(255,188,10,0.12)'},itemStyle:{color:'#FFBC0A'},label:{show:true,color:'#FFBC0A',fontSize:9,formatter:'{c}s'}}]
-    });mockCharts.push(ch)}
-  }catch(e){console.log('Mock charts init error:',e)}
-  // 延迟 resize 确保容器已渲染
+      series:[{type:'radar',data:rd.map(function(d){return{
+        value:[d.hp,d.torque,d.topSpeed,Math.min(10,d.weight/200),Math.min(10,d.price/40)],
+        name:d.name.split(' ').slice(0,2).join(' ')
+      }}),areaStyle:{opacity:0.05},lineStyle:{width:1.5}}]
+    });mockCharts.push(ch);
+  }
+
+  // 5. 极速对比 — 柱状图取前 8
+  el=document.getElementById('mLine');if(el){
+    var sorted3=data.slice().sort(function(a,b){return b.topSpeed-a.topSpeed}).slice(0,8);
+    var ch=echarts.init(el);ch.setOption({
+      tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>极速: '+p[0].value+' km/h'}},
+      xAxis:{type:'category',data:sorted3.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:9,interval:0,rotate:20},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+      yAxis:{type:'value',name:'km/h',nameTextStyle:{color:'#5C5F6E',fontSize:9},axisLabel:{color:'#5C5F6E',fontSize:8},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+      series:[{type:'bar',data:sorted3.map(function(d,i){return{value:d.topSpeed,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:24,label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:'{c}'}}],
+      grid:{top:12,bottom:36,left:36,right:8}
+    });mockCharts.push(ch);
+  }
+
   setTimeout(function(){mockCharts.forEach(function(c){try{c.resize()}catch(e){}})},100);
 }
 
-// ─── Mock Table Data ───
+// ─── Mock Table (API-driven) ───
 function renderMockTable(){
-  var MOCK_DATA=[
-    {n:'Hennessy Venom GT',hp:1244,tq:1155,a:'2.7s',top:301,wt:1350,eng:'V8 双涡轮',yr:2010},
-    {n:'Koenigsegg Agera RS',hp:1360,tq:1011,a:'2.8s',top:447,wt:1395,eng:'V8 双涡轮',yr:2015},
-    {n:'Bugatti Chiron',hp:1579,tq:1600,a:'2.4s',top:420,wt:1995,eng:'W16 四涡轮',yr:2016},
-    {n:'Koenigsegg Jesko',hp:1603,tq:1500,a:'2.5s',top:483,wt:1420,eng:'V8 双涡轮',yr:2020},
-    {n:'Rimac Nevera',hp:1914,tq:2360,a:'1.8s',top:412,wt:2150,eng:'电动四电机',yr:2021},
-    {n:'SSC Tuatara',hp:1750,tq:1340,a:'2.5s',top:455,wt:1247,eng:'V8 双涡轮',yr:2020},
-    {n:'McLaren Speedtail',hp:1070,tq:1150,a:'2.9s',top:403,wt:1430,eng:'V8 混动',yr:2019},
-    {n:'Aston Martin Valkyrie',hp:1160,tq:900,a:'2.5s',top:362,wt:1030,eng:'V12 自吸',yr:2021},
-  ];
   var h=document.getElementById('mockBody');
-  h.innerHTML=MOCK_DATA.map(function(d){return '<tr><td style="font-weight:600;color:var(--ink)">'+d.n+'</td><td>'+d.hp+'</td><td>'+d.tq+'</td><td>'+d.a+'</td><td>'+d.top+'</td><td>'+d.wt+'</td><td>'+d.eng+'</td><td>'+d.yr+'</td></tr>'}).join('');
-  document.getElementById('sMock').textContent=MOCK_DATA.length;
+  if(!mockData.length){h.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--ink-soft)">加载中...</td></tr>';return}
+  // 按 hp 降序排列
+  var sorted=mockData.slice().sort(function(a,b){return b.hp-a.hp});
+  h.innerHTML=sorted.map(function(d){
+    return '<tr><td style="font-weight:600;color:var(--ink)">'+d.name+'</td><td>'+d.hp+'</td><td>'+d.torque+'</td><td>'+d.acceleration+'s</td><td>'+d.topSpeed+'</td><td>'+d.weight+'kg</td><td>'+d.engine+'</td><td>'+d.year+'</td></tr>';
+  }).join('');
+  document.getElementById('sMock').textContent=mockData.length;
 }
 
 // ─── CRUD ───
@@ -439,12 +471,15 @@ function reSeed(){
 function loadData(){
   Promise.all([
     fetch(API+'/views').then(function(r){return r.json()}).then(function(d){viewsData=d}),
-    fetch(API+'/overrides').then(function(r){return r.json()}).then(function(d){overridesData=d})
+    fetch(API+'/overrides').then(function(r){return r.json()}).then(function(d){overridesData=d}),
+    fetch(API+'/mock-vehicles').then(function(r){return r.json()}).then(function(d){mockData=d})
   ]).then(function(){
     document.getElementById('sViews').textContent=viewsData.length;
     document.getElementById('sOverrides').textContent=overridesData.length;
     document.getElementById('sActive').textContent=viewsData.filter(function(v){return v.isActive}).length;
     renderViewsTable();
+    renderMockTable();
+    initMockCharts();
   }).catch(function(){
     document.getElementById('viewsBody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink-soft)">无法连接后端服务</td></tr>';
   });
@@ -454,10 +489,7 @@ function loadData(){
 window.onload=function(){
   initCharts();
   initThreePreview();
-  renderMockTable();
   loadData();
-  // Show data page mock charts immediately (to avoid ECharts resize issues)
-  initMockCharts();
 };
 </script>
 </body>
