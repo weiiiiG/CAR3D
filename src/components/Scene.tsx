@@ -87,11 +87,14 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
       ctrl.update();re.render(sc,cam)
     };gsap.ticker.add(tick)
     window.addEventListener('resize',()=>{const w=h.clientWidth,wh=h.clientHeight;cam.aspect=w/wh;cam.updateProjectionMatrix();re.setSize(w,wh)})
-    const ct=gsap.timeline()
+    const ct=gsap.timeline({onComplete:()=>{loadDone=true;tryPlay()}})
     ct.to('.loading-title .char',{y:0,opacity:1,duration:0.4,ease:'power2.out',stagger:0.025},0.15)
     ct.to('.loading-sub',{opacity:1,y:0,duration:0.4,ease:'power2.out'},0.5)
     ct.to(ldRef.current,{opacity:1,scaleX:1,duration:0.7,ease:'power3.out'},0.55)
     ct.to(prRef.current,{opacity:1,duration:0.4},0.75);ct.to(lsRef.current,{opacity:1,duration:0.4},0.9)
+
+    let loadDone=false,modelReady=false
+    function tryPlay(){if(loadDone&&modelReady&&mTlRef.current)mTlRef.current.play()}
 
     const loader=new GLTFLoader()
     loader.load(MODEL_URL,(gltf)=>{
@@ -139,7 +142,7 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
         onUpdate:()=>cam.lookAt(ctrl.target)
       },6.0)
       orbitTL.to([ltRef.current,ldRef.current,prRef.current,lsRef.current,document.querySelector('.loading-sub')],{opacity:0,y:-8,duration:0.35,stagger:0.025},6.5)
-      mTlRef.current=orbitTL;setProg(100);orbitTL.play()
+      mTlRef.current=orbitTL;setProg(100);modelReady=true;tryPlay()
     },(xhr)=>{if(xhr.total)setProg(Math.round((xhr.loaded/xhr.total)*100))},()=>{})
 
     return()=>{
