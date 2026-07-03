@@ -28,7 +28,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
 .sidebar-nav a:hover,.sidebar-nav a.active{background:var(--accent-dim);color:var(--accent)}
 .sidebar-3d{padding:10px 14px;border-radius:4px;background:rgba(255,188,10,0.12);color:var(--accent);text-decoration:none;font-size:13px;font-weight:600;text-align:center;cursor:pointer;transition:.15s;display:block}
 .sidebar-3d:hover{background:var(--accent);color:var(--bg)}
-.sidebar-status{margin-top:12px;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+.sidebar-status{margin-top:6px;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
 .sidebar-status .dot{width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block}
 .main{flex:1;overflow-y:auto;padding:28px 32px}
 .page{display:none}.page.active{display:block}
@@ -98,10 +98,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
     <a onclick="switchPage('settings')" data-page="settings">设置</a>
   </div>
   <div style="flex:1;min-height:4px"></div>
+  <a class="sidebar-3d" onclick="window.open('http://localhost:5180','_blank')">返回 3D 展示</a>
   <div class="sidebar-status">
     <span class="dot"></span> 后端运行中 <span style="margin-left:auto;font-size:10px">v1.0</span>
   </div>
-  <a class="sidebar-3d" onclick="window.open('http://localhost:5180','_blank')">返回 3D 展示</a>
 </div>
 
 <div class="main">
@@ -312,7 +312,7 @@ function initMockCharts(){
     var ch=echarts.init(el);ch.setOption({
       tooltip:{trigger:'item',formatter:'{b}: {c} 款 ({d}%)'},
       series:[{type:'pie',radius:['20%','55%'],center:['50%','55%'],data:pieData.map(function(d){return{name:d.name,value:d.value,itemStyle:{color:colors[d.name]||'#6B7280'}}}),
-      label:{color:'#9CA0B0',fontSize:11,formatter:'{b}\n{d}%'},emphasis:{label:{fontSize:13,fontWeight:'bold'}},animationDuration:800,animationEasing:'elasticOut'}],
+      label:{color:'#9CA0B0',fontSize:11,formatter:'{b}\n{d}%'},emphasis:{label:{fontSize:13,fontWeight:'bold'}},animationDuration:800,animationEasing:'cubicOut'}],
     });mockCharts.push(ch);
   }
 
