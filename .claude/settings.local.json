@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sL \"https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_09_1k.hdr\" -o \"D:/threejs/3D/public/env/studio_small_09_1k.hdr\")",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

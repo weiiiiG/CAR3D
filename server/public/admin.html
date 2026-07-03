@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Car3D Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0A0B10;--surface:#14161E;--ink:#F0F1F4;--ink-mute:#9CA0B0;--ink-soft:#5C5F6E;--rule:rgba(240,241,244,0.08);--accent:#FFBC0A;--accent-deep:#D99A00;--accent-dim:rgba(255,188,10,0.12);--display:'Bebas Neue',sans-serif;--sans:'Inter',system-ui,sans-serif}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--rule);padding:24px 20px;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-brand{font-family:var(--display);font-size:22px;letter-spacing:.06em;color:var(--ink);margin-bottom:32px}
+.sidebar-brand span{color:var(--accent)}
+.sidebar-nav{display:flex;flex-direction:column;gap:4px}
+.sidebar-nav a{padding:10px 14px;border-radius:4px;color:var(--ink-mute);text-decoration:none;font-size:13px;font-weight:500;transition:.15s;cursor:pointer}
+.sidebar-nav a:hover,.sidebar-nav a.active{background:var(--accent-dim);color:var(--accent)}
+.sidebar-status{margin-top:auto;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+.sidebar-status .dot{width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block}
+.main{flex:1;overflow-y:auto;padding:28px 32px}
+.page{display:none}.page.active{display:block}
+.page h1{font-family:var(--display);font-size:28px;letter-spacing:.04em;margin-bottom:4px}
+.page .subtitle{font-size:12px;color:var(--ink-mute);margin-bottom:24px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px}
+.stat-card .stat-num{font-family:var(--display);font-size:28px;color:var(--accent)}
+.stat-card .stat-label{font-size:11px;color:var(--ink-mute);margin-top:2px}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.chart-card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px}
+.chart-card h3{font-family:var(--display);font-size:16px;letter-spacing:.04em;margin-bottom:8px;color:var(--ink-mute)}
+.chart-box{height:220px;width:100%}.chart-box-sm{height:150px;width:100%}
+.three-preview{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-bottom:24px;position:relative;height:200px}
+.three-preview-label{position:absolute;bottom:12px;left:16px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);background:rgba(10,11,16,0.7);padding:4px 10px;border-radius:3px;z-index:2}
+.data-table-wrap{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.data-table-wrap .table-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--rule)}
+.data-table-wrap .table-head h3{font-family:var(--display);font-size:16px;letter-spacing:.04em;color:var(--ink-mute)}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{text-align:left;padding:10px 14px;color:var(--ink-soft);font-weight:600;border-bottom:1px solid var(--rule);text-transform:uppercase;letter-spacing:.06em;font-size:10px;white-space:nowrap}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--rule);color:var(--ink-mute);vertical-align:middle}
+.data-table tr:hover td{background:var(--accent-dim)}
+.data-table .key-cell{font-weight:600;color:var(--ink)}
+.data-table .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:3px;background:var(--accent-dim);color:var(--accent)}
+.data-table .badge-default{background:rgba(156,160,176,0.1);color:var(--ink-mute)}
+.data-table td .btn{padding:4px 10px;border-radius:3px;border:1px solid var(--rule);background:transparent;color:var(--ink-mute);cursor:pointer;font-size:11px;transition:.15s;margin-right:4px}
+.data-table td .btn:hover{border-color:var(--accent);color:var(--accent)}
+.data-table td .btn.danger:hover{border-color:#EF4444;color:#EF4444}
+.data-table td .btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.data-table td .btn.primary:hover{background:#FFD446}
+.btn-add{padding:8px 16px;border-radius:4px;border:none;background:var(--accent);color:var(--bg);cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;transition:.15s}
+.btn-add:hover{background:#FFD446}
+.modal-mask{position:fixed;inset:0;z-index:100;background:rgba(5,6,10,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}
+.modal-panel{background:var(--surface);border:1px solid var(--rule);border-radius:8px;width:min(480px,calc(100vw-40px));max-height:80vh;overflow-y:auto;padding:24px;box-shadow:0 12px 48px rgba(0,0,0,0.5)}
+.modal-panel h2{font-family:var(--display);font-size:20px;letter-spacing:.04em;color:var(--ink);margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:11px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.form-group input,.form-group select,.form-group textarea{background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:8px 10px;font-family:var(--sans);font-size:12px;color:var(--ink);outline:none;transition:border-color .18s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--rule)}
+.modal-actions .btn{padding:9px 18px;border-radius:4px;border:1px solid var(--rule);background:transparent;color:var(--ink-mute);cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;transition:.15s}
+.modal-actions .btn:hover{border-color:var(--ink-mute);color:var(--ink)}
+.modal-actions .btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.modal-actions .btn.primary:hover{background:#FFD446}
+.modal-actions .btn.danger{border-color:#EF4444;color:#EF4444}
+.modal-actions .btn.danger:hover{background:#EF4444;color:#fff}
+.settings-group{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:20px;margin-bottom:16px}
+.settings-group h3{font-family:var(--display);font-size:16px;letter-spacing:.04em;color:var(--ink-mute);margin-bottom:12px}
+.settings-group .setting-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--rule)}
+.settings-group .setting-row:last-child{border-bottom:none}
+.settings-group .setting-label{font-size:12px;color:var(--ink-mute)}
+.settings-group .setting-value{font-size:12px;color:var(--ink)}
+.toast{position:fixed;bottom:24px;right:24px;z-index:200;background:var(--surface);border:1px solid var(--accent);border-radius:6px;padding:12px 18px;font-size:12px;color:var(--ink);box-shadow:0 4px 20px rgba(0,0,0,0.4);display:flex;align-items:center;gap:8px}
+.toast .close{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:16px;padding:0 4px}
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr)}.charts-row{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-brand">CAR<span>3D</span></div>
+  <div class="sidebar-nav">
+    <a onclick="switchPage('dashboard')" data-page="dashboard" class="active">仪表盘</a>
+    <a onclick="switchPage('views')" data-page="views">视角管理</a>
+    <a onclick="switchPage('data')" data-page="data">数据概览</a>
+    <a onclick="switchPage('settings')" data-page="settings">设置</a>
+  </div>
+  <div class="sidebar-status">
+    <span class="dot"></span> 后端运行中 <span style="margin-left:auto;font-size:10px">v1.0</span>
+  </div>
+</div>
+
+<div class="main">
+<!-- ===== Dashboard ===== -->
+<div class="page active" id="page-dashboard">
+  <h1>仪表盘</h1>
+  <div class="subtitle">Hennessy Venom GT · 数据管理后台</div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="sViews">—</div><div class="stat-label">视角总数</div></div>
+    <div class="stat-card"><div class="stat-num" id="sOverrides">—</div><div class="stat-label">覆盖调整数</div></div>
+    <div class="stat-card"><div class="stat-num" id="sActive">—</div><div class="stat-label">启用的视角</div></div>
+    <div class="stat-card"><div class="stat-num" id="sMock">—</div><div class="stat-label">Mock 数据条目</div></div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card"><h3>规格雷达</h3><div class="chart-box" id="cRadar"></div></div>
+    <div class="chart-card"><h3>尺寸对比</h3><div class="chart-box" id="cBar"></div></div>
+  </div>
+  <div class="charts-row" style="grid-template-columns:1fr 1fr">
+    <div class="chart-card"><h3>材料分布</h3><div class="chart-box" id="cPie"></div></div>
+    <div class="chart-card"><h3>月度访问趋势</h3><div class="chart-box" id="cTrend"></div></div>
+  </div>
+  <div class="three-preview" id="threeBox">
+    <div class="three-preview-label">3D 场景预览</div>
+  </div>
+</div>
+
+<!-- ===== Views CRUD ===== -->
+<div class="page" id="page-views">
+  <h1>视角管理</h1>
+  <div class="subtitle">增删改查所有视角配置</div>
+  <div class="data-table-wrap">
+    <div class="table-head"><h3>视角列表</h3><button class="btn-add" onclick="openAdd()">+ 新增视角</button></div>
+    <table class="data-table"><thead><tr>
+      <th>Key</th><th>名称</th><th>分类</th><th>规格</th><th>相机位置</th><th>覆盖</th><th style="width:180px">操作</th>
+    </tr></thead><tbody id="viewsBody"></tbody></table>
+  </div>
+</div>
+
+<!-- ===== Data Overview ===== -->
+<div class="page" id="page-data">
+  <h1>数据概览</h1>
+  <div class="subtitle">所有视角数据的详细展示 + Mock 数据集</div>
+  <div class="charts-row" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="chart-card"><h3>气缸数对比</h3><div class="chart-box-sm" id="mBar1"></div></div>
+    <div class="chart-card"><h3>0-100加速</h3><div class="chart-box-sm" id="mBar2"></div></div>
+    <div class="chart-card"><h3>整备质量</h3><div class="chart-box-sm" id="mPie1"></div></div>
+  </div>
+  <div class="charts-row" style="grid-template-columns:1fr 1fr">
+    <div class="chart-card"><h3>超跑性能雷达</h3><div class="chart-box" id="mRadar"></div></div>
+    <div class="chart-card"><h3>赛道圈速 (秒)</h3><div class="chart-box" id="mLine"></div></div>
+  </div>
+  <div class="data-table-wrap" style="margin-top:16px">
+    <div class="table-head"><h3>Mock 数据 · 超跑参数对比</h3></div>
+    <table class="data-table"><thead><tr>
+      <th>车型</th><th>马力</th><th>扭矩(Nm)</th><th>0-100km/h</th><th>极速(km/h)</th><th>重量(kg)</th><th>发动机</th><th>年份</th>
+    </tr></thead><tbody id="mockBody"></tbody></table>
+  </div>
+</div>
+
+<!-- ===== Settings ===== -->
+<div class="page" id="page-settings">
+  <h1>设置</h1><div class="subtitle">系统配置与管理</div>
+  <div class="settings-group">
+    <h3>数据库连接</h3>
+    <div class="setting-row"><span class="setting-label">地址</span><span class="setting-value">localhost:5432/car3d_admin</span></div>
+    <div class="setting-row"><span class="setting-label">表</span><span class="setting-value">views, view_overrides</span></div>
+    <div class="setting-row"><span class="setting-label">状态</span><span class="setting-value" style="color:#22C55E">已连接</span></div>
+  </div>
+  <div class="settings-group">
+    <h3>数据操作</h3>
+    <div class="setting-row"><span class="setting-label">重新导入初始数据</span><button style="padding:6px 14px;border-radius:4px;border:none;background:var(--accent);color:var(--bg);cursor:pointer;font-size:11px;font-weight:600" onclick="reSeed()">执行</button></div>
+    <div class="setting-row"><span class="setting-label">API 地址</span><span class="setting-value" style="font-family:monospace;font-size:11px">http://localhost:3000/api</span></div>
+  </div>
+  <div class="settings-group">
+    <h3>关于</h3>
+    <div class="setting-row"><span class="setting-label">版本</span><span class="setting-value">v1.0.0</span></div>
+    <div class="setting-row"><span class="setting-label">技术栈</span><span class="setting-value">React + Three.js + GSAP + NestJS + PostgreSQL</span></div>
+  </div>
+</div>
+</div>
+
+<div id="modalBox" style="display:none"></div>
+<div id="toastBox"></div>
+
+<script>
+// ============================================================================
+// Global admin script (NOT module — plain script so onclick= and echarts work)
+// ============================================================================
+var API='http://localhost:3000/api';
+var viewsData=[], overridesData=[];
+
+function toast(msg){
+  var t=document.getElementById('toastBox');
+  t.innerHTML='<div class="toast"><span>'+msg+'</span><button class="close" onclick="this.parentElement.remove()">×</button></div>';
+  setTimeout(function(){var d=t.querySelector('.toast');if(d)d.remove()},3000);
+}
+
+// ─── Page switching ───
+function switchPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('[data-page]').forEach(function(a){a.classList.remove('active')});
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelector('[data-page="'+name+'"]').classList.add('active');
+  if(name==='data') initMockCharts();
+}
+
+// ─── Dashboard charts ───
+function initCharts(){
+  echarts.init(document.getElementById('cRadar')).setOption({
+    radar:{indicator:[{name:'马力',max:1500},{name:'扭矩',max:1200},{name:'极速',max:350},{name:'0-60',max:3.5},{name:'下压力',max:500}],
+    axisName:{color:'#9CA0B0',fontSize:10},splitArea:{areaStyle:{color:['rgba(255,188,10,0.04)','rgba(255,188,10,0.10)']}},
+    splitLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+    series:[{type:'radar',data:[{value:[1244,1155,301,2.7,450],name:'Venom GT'}],areaStyle:{color:'rgba(255,188,10,0.25)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'}}]
+  });
+  echarts.init(document.getElementById('cBar')).setOption({
+    xAxis:{type:'category',data:['车长','车宽','车高','轴距'],axisLabel:{color:'#9CA0B0',fontSize:10},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+    yAxis:{type:'value',axisLabel:{color:'#5C5F6E'},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+    series:[{type:'bar',data:[4650,1960,1130,2800],itemStyle:{color:'#FFBC0A'}}]
+  });
+  echarts.init(document.getElementById('cPie')).setOption({
+    series:[{type:'pie',radius:['35%','55%'],data:[
+      {value:45,name:'碳纤维',itemStyle:{color:'#2D3040'}},{value:30,name:'Alcantara',itemStyle:{color:'#6B7280'}},
+      {value:15,name:'皮革',itemStyle:{color:'#FFBC0A'}},{value:10,name:'铝合金',itemStyle:{color:'#D99A00'}}],
+    label:{color:'#9CA0B0',fontSize:10}}]
+  });
+  echarts.init(document.getElementById('cTrend')).setOption({
+    xAxis:{type:'category',data:['1月','2月','3月','4月','5月','6月'],axisLabel:{color:'#9CA0B0',fontSize:10},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+    yAxis:{type:'value',axisLabel:{color:'#5C5F6E'},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+    series:[
+      {name:'前脸',type:'line',data:[320,402,480,534,590,650],smooth:true,lineStyle:{color:'#FFBC0A',width:2},areaStyle:{color:'rgba(255,188,10,0.1)'}},
+      {name:'侧颜',type:'line',data:[220,282,350,410,445,490],smooth:true,lineStyle:{color:'#D99A00',width:2},areaStyle:{color:'rgba(217,154,0,0.08)'}},
+      {name:'座舱',type:'line',data:[150,180,220,260,300,340],smooth:true,lineStyle:{color:'#6B7280',width:2},areaStyle:{color:'rgba(107,114,128,0.08)'}},
+      {name:'内饰',type:'line',data:[80,110,145,180,220,260],smooth:true,lineStyle:{color:'#5C5F6E',width:2},areaStyle:{color:'rgba(92,95,110,0.08)'}}
+    ]
+  });
+}
+
+// ─── 3D Preview ───
+function initThreePreview(){
+  var container=document.getElementById('threeBox');
+  var w=container.clientWidth,h=200;
+  var scene=new THREE.Scene();
+  var cam=new THREE.PerspectiveCamera(45,w/h,0.1,100);cam.position.set(6,3,8);
+  var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setSize(w,h);renderer.setClearColor(0x0A0B10,1);
+  container.insertBefore(renderer.domElement, container.firstChild);
+  new THREE.HemisphereLight(0xfff1d6,0x1a1714,0.3).position.set(0,5,0);scene.add(new THREE.AmbientLight(0x404060));
+  var dl=new THREE.DirectionalLight(0xfff5e0,0.6);dl.position.set(3,5,2);scene.add(dl);
+  var b=new THREE.Mesh(new THREE.BoxGeometry(1.8,0.4,4.2),new THREE.MeshStandardMaterial({color:0x1C1E28,metalness:0.6,roughness:0.3}));
+  b.position.y=0.5;scene.add(b);
+  var c=new THREE.Mesh(new THREE.BoxGeometry(1.3,0.3,1.8),new THREE.MeshStandardMaterial({color:0x2D3040,metalness:0.4,roughness:0.5}));
+  c.position.set(0,0.9,-0.3);scene.add(c);
+  var wg=new THREE.CylinderGeometry(0.25,0.25,0.15,16),wm=new THREE.MeshStandardMaterial({color:0x1A1C26,metalness:0.3,roughness:0.7});
+  [[-0.75,0.25,1.3],[0.75,0.25,1.3],[-0.75,0.25,-1.3],[0.75,0.25,-1.3]].forEach(function(p){
+    var wh=new THREE.Mesh(wg,wm);wh.position.set(p[0],p[1],p[2]);wh.rotation.x=Math.PI/2;scene.add(wh);
+  });
+  var grid=new THREE.GridHelper(20,20,0x2D3040,0x1A1C26);grid.position.y=-0.05;scene.add(grid);
+  // Simple rotation animation (no OrbitControls to keep it simple)
+  (function anim(){b.rotation.y+=0.003;c.rotation.y+=0.003;renderer.render(scene,cam);requestAnimationFrame(anim)})();
+}
+
+// ─── Mock Charts (Data Overview page) ───
+function initMockCharts(){
+  try {
+    var c1=document.getElementById('mBar1');if(c1)echarts.init(c1).setOption({
+      xAxis:{type:'category',data:['Venom GT','Agera RS','Chiron','Jesko'],axisLabel:{color:'#9CA0B0',fontSize:9},axisLine:{show:false}},
+      yAxis:{show:false},series:[{type:'bar',data:[8,8,16,8],itemStyle:{color:function(p){return['#FFBC0A','#D99A00','#6B7280','#2D3040'][p.dataIndex]}}}],grid:{top:8,bottom:8,left:4,right:4}
+    });
+    var c2=document.getElementById('mBar2');if(c2)echarts.init(c2).setOption({
+      xAxis:{type:'category',data:['Venom GT','Agera RS','Chiron','Jesko'],axisLabel:{color:'#9CA0B0',fontSize:9},axisLine:{show:false}},
+      yAxis:{show:false},series:[{type:'bar',data:[2.7,2.8,2.4,2.5],itemStyle:{color:function(p){return['#FFBC0A','#D99A00','#6B7280','#2D3040'][p.dataIndex]}}}],grid:{top:8,bottom:8,left:4,right:4}
+    });
+    var c3=document.getElementById('mPie1');if(c3)echarts.init(c3).setOption({
+      series:[{type:'pie',radius:['30%','50%'],data:[
+        {value:1350,name:'Venom GT',itemStyle:{color:'#FFBC0A'}},{value:1395,name:'Agera RS',itemStyle:{color:'#D99A00'}},
+        {value:1995,name:'Chiron',itemStyle:{color:'#6B7280'}},{value:1420,name:'Jesko',itemStyle:{color:'#2D3040'}}],
+      label:{color:'#9CA0B0',fontSize:9}}]
+    });
+    var c4=document.getElementById('mRadar');if(c4)echarts.init(c4).setOption({
+      radar:{indicator:[{name:'马力',max:2000},{name:'扭矩',max:1800},{name:'极速',max:500},{name:'下压力',max:800},{name:'轻量化',max:10}],
+      axisName:{color:'#9CA0B0',fontSize:9},splitArea:{areaStyle:{color:['rgba(255,188,10,0.03)','rgba(255,188,10,0.08)']}},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+      series:[{type:'radar',data:[
+        {value:[1244,1155,301,450,7.5],name:'Venom GT'},{value:[1360,1011,447,610,6.8],name:'Agera RS'},
+        {value:[1579,1600,420,500,4.5],name:'Chiron'},{value:[1603,1500,483,700,7.2],name:'Jesko'}],
+      areaStyle:{opacity:0.05},lineStyle:{width:1.5}}]
+    });
+    var c5=document.getElementById('mLine');if(c5)echarts.init(c5).setOption({
+      xAxis:{type:'category',data:['Spa','Nürburgring','Laguna Seca','Monza','Silverstone'],axisLabel:{color:'#9CA0B0',fontSize:9},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+      yAxis:{type:'value',name:'秒',nameTextStyle:{color:'#5C5F6E',fontSize:9},axisLabel:{color:'#5C5F6E',fontSize:8},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+      series:[{type:'line',data:[132.5,398.0,87.5,118.2,96.8],smooth:true,lineStyle:{color:'#FFBC0A',width:2},areaStyle:{color:'rgba(255,188,10,0.12)'},itemStyle:{color:'#FFBC0A'}}]
+    });
+  }catch(e){console.log('Mock charts init error (expected if hidden):',e)}
+}
+
+// ─── Mock Table Data ───
+function renderMockTable(){
+  var MOCK_DATA=[
+    {n:'Hennessy Venom GT',hp:1244,tq:1155,a:'2.7s',top:301,wt:1350,eng:'V8 双涡轮',yr:2010},
+    {n:'Koenigsegg Agera RS',hp:1360,tq:1011,a:'2.8s',top:447,wt:1395,eng:'V8 双涡轮',yr:2015},
+    {n:'Bugatti Chiron',hp:1579,tq:1600,a:'2.4s',top:420,wt:1995,eng:'W16 四涡轮',yr:2016},
+    {n:'Koenigsegg Jesko',hp:1603,tq:1500,a:'2.5s',top:483,wt:1420,eng:'V8 双涡轮',yr:2020},
+    {n:'Rimac Nevera',hp:1914,tq:2360,a:'1.8s',top:412,wt:2150,eng:'电动四电机',yr:2021},
+    {n:'SSC Tuatara',hp:1750,tq:1340,a:'2.5s',top:455,wt:1247,eng:'V8 双涡轮',yr:2020},
+    {n:'McLaren Speedtail',hp:1070,tq:1150,a:'2.9s',top:403,wt:1430,eng:'V8 混动',yr:2019},
+    {n:'Aston Martin Valkyrie',hp:1160,tq:900,a:'2.5s',top:362,wt:1030,eng:'V12 自吸',yr:2021},
+  ];
+  var h=document.getElementById('mockBody');
+  h.innerHTML=MOCK_DATA.map(function(d){return '<tr><td style="font-weight:600;color:var(--ink)">'+d.n+'</td><td>'+d.hp+'</td><td>'+d.tq+'</td><td>'+d.a+'</td><td>'+d.top+'</td><td>'+d.wt+'</td><td>'+d.eng+'</td><td>'+d.yr+'</td></tr>'}).join('');
+  document.getElementById('sMock').textContent=MOCK_DATA.length;
+}
+
+// ─── CRUD ───
+function renderViewsTable(){
+  var overridden={};overridesData.forEach(function(o){overridden[o.viewKey]=true});
+  var h=document.getElementById('viewsBody');
+  if(!viewsData.length){h.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink-soft)">加载中...</td></tr>';return}
+  h.innerHTML=viewsData.map(function(v){
+    var hasOv=overridden[v.key]||false;
+    return '<tr><td class="key-cell"><span class="badge '+(hasOv?'':'badge-default')+'">'+v.key+'</span></td>'+
+      '<td style="color:var(--ink)">'+v.label+'</td>'+
+      '<td><span class="badge">'+(v.specCategory||'—')+'</span></td>'+
+      '<td>'+(v.spec||'—')+'</td>'+
+      '<td>'+v.posX.toFixed(1)+', '+v.posY.toFixed(1)+', '+v.posZ.toFixed(1)+'</td>'+
+      '<td>'+(hasOv?'<span style="color:var(--accent)">已调整</span>':'<span style="color:var(--ink-soft)">默认</span>')+'</td>'+
+      '<td><button class="btn primary" onclick="openEdit(\''+v.key+'\')">编辑</button>'+
+      ' <button class="btn danger" onclick="deleteView(\''+v.key+'\')">删除</button></td></tr>'
+  }).join('');
+}
+
+function openEdit(key){
+  var v=viewsData.find(function(x){return x.key===key});if(!v)return;
+  var m=document.getElementById('modalBox');m.style.display='block';
+  m.innerHTML='<div class="modal-mask" onclick="closeModal()"><div class="modal-panel" onclick="event.stopPropagation()">'+
+    '<h2>编辑视角 · '+v.key+'</h2><div class="form-grid">'+
+    '<div class="form-group"><label>Key</label><input id="ek" value="'+v.key+'" readonly style="opacity:.5"/></div>'+
+    '<div class="form-group"><label>名称</label><input id="el" value="'+v.label+'"/></div>'+
+    '<div class="form-group"><label>分类</label><select id="ec">'+
+      '<option'+(v.specCategory==='POWERTRAIN'?' selected':'')+'>POWERTRAIN</option>'+
+      '<option'+(v.specCategory==='AERODYNAMICS'?' selected':'')+'>AERODYNAMICS</option>'+
+      '<option'+(v.specCategory==='COCKPIT'?' selected':'')+'>COCKPIT</option>'+
+      '<option'+(v.specCategory==='INTERIOR'?' selected':'')+'>INTERIOR</option>'+
+      '<option'+(v.specCategory==='DOORS'?' selected':'')+'>DOORS</option>'+
+      '<option'+(v.specCategory==='WHEELS'?' selected':'')+'>WHEELS</option>'+
+    '</select></div>'+
+    '<div class="form-group"><label>规格</label><input id="es" value="'+(v.spec||'')+'"/></div>'+
+    '<div class="form-group"><label>posX</label><input id="epx" value="'+v.posX+'"/></div>'+
+    '<div class="form-group"><label>posY</label><input id="epy" value="'+v.posY+'"/></div>'+
+    '<div class="form-group"><label>posZ</label><input id="epz" value="'+v.posZ+'"/></div>'+
+    '<div class="form-group"><label>targetX</label><input id="etx" value="'+v.targetX+'"/></div>'+
+    '<div class="form-group"><label>targetY</label><input id="ety" value="'+v.targetY+'"/></div>'+
+    '<div class="form-group"><label>targetZ</label><input id="etz" value="'+v.targetZ+'"/></div>'+
+    '<div class="form-group full"><label>描述</label><textarea id="ed">'+(v.description||'')+'</textarea></div>'+
+    '</div><div class="modal-actions">'+
+    '<button class="btn" onclick="closeModal()">取消</button>'+
+    '<button class="btn primary" onclick="saveEdit(\''+v.key+'\')">保存修改</button></div></div></div>';
+}
+
+function openAdd(){
+  var m=document.getElementById('modalBox');m.style.display='block';
+  m.innerHTML='<div class="modal-mask" onclick="closeModal()"><div class="modal-panel" onclick="event.stopPropagation()">'+
+    '<h2>新增视角</h2><div class="form-grid">'+
+    '<div class="form-group"><label>Key *</label><input id="ek" placeholder="如: rear"/></div>'+
+    '<div class="form-group"><label>名称 *</label><input id="el" placeholder="如: 尾部"/></div>'+
+    '<div class="form-group"><label>分类</label><select id="ec"><option>POWERTRAIN</option><option>AERODYNAMICS</option><option>COCKPIT</option><option>INTERIOR</option><option>DOORS</option><option>WHEELS</option></select></div>'+
+    '<div class="form-group"><label>规格</label><input id="es" placeholder="如: 1,244 hp"/></div>'+
+    '<div class="form-group"><label>posX</label><input id="epx" value="0" placeholder="从场景获取"/></div>'+
+    '<div class="form-group"><label>posY</label><input id="epy" value="1.5"/></div>'+
+    '<div class="form-group"><label>posZ</label><input id="epz" value="5"/></div>'+
+    '<div class="form-group"><label>targetX</label><input id="etx" value="0"/></div>'+
+    '<div class="form-group"><label>targetY</label><input id="ety" value="0.6"/></div>'+
+    '<div class="form-group"><label>targetZ</label><input id="etz" value="0"/></div>'+
+    '<div class="form-group full"><label>描述</label><textarea id="ed"></textarea></div>'+
+    '</div><div style="margin-bottom:12px;display:flex;gap:8px">'+
+    '<button class="btn-add" onclick="captureFromScene(document.getElementById(\'ek\').value||\'newview\')" style="flex:1;text-align:center">从 3D 场景获取坐标</button></div>'+
+    '<div class="modal-actions">'+
+    '<button class="btn" onclick="closeModal()">取消</button>'+
+    '<button class="btn primary" onclick="saveNew()">创建</button></div></div></div>';
+}
+
+function closeModal(){document.getElementById('modalBox').style.display='none'}
+
+function saveEdit(key){
+  var b={label:g('el'),description:g('ed'),spec:g('es'),specCategory:g('ec'),
+    posX:pf('epx'),posY:pf('epy'),posZ:pf('epz'),targetX:pf('etx'),targetY:pf('ety'),targetZ:pf('etz')};
+  fetch(API+'/views/'+key,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})
+  .then(function(){closeModal();toast('视角已更新');loadData()}).catch(function(){toast('保存失败')});
+}
+function saveNew(){
+  var key=g('ek');if(!key){toast('请输入 Key');return}
+  var b={key:key,label:g('el'),description:g('ed'),spec:g('es'),specCategory:g('ec'),
+    posX:pf('epx'),posY:pf('epy'),posZ:pf('epz'),targetX:pf('etx'),targetY:pf('ety'),targetZ:pf('etz')};
+  fetch(API+'/views',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})
+  .then(function(){closeModal();toast('视角已创建');loadData()}).catch(function(){toast('创建失败')});
+}
+function deleteView(key){
+  if(!confirm('确定删除视角 「'+key+'」 吗？'))return;
+  fetch(API+'/views/'+key,{method:'DELETE'}).then(function(){toast('已删除');loadData()}).catch(function(){toast('删除失败')});
+}
+
+function g(id){return document.getElementById(id).value}
+function pf(id){return parseFloat(document.getElementById(id).value)}
+
+// ─── Capture from 3D scene ───
+var capturePoll=null;
+function captureFromScene(key){
+  // 打开 3D 展示页进入捕获模式
+  window.open('http://localhost:5180/?capture='+encodeURIComponent(key),'_blank');
+  toast('请在打开的 3D 场景中调整视角后点击「确认保存」');
+  // 轮询 localStorage 获取捕获结果
+  if(capturePoll)clearInterval(capturePoll);
+  localStorage.removeItem('admin_capture');
+  capturePoll=setInterval(function(){
+    try {
+      var raw=localStorage.getItem('admin_capture');
+      if(!raw)return;
+      var d=JSON.parse(raw);
+      clearInterval(capturePoll);capturePoll=null;
+      localStorage.removeItem('admin_capture');
+      // 填充表单
+      var epx=document.getElementById('epx');if(epx)epx.value=d.pos[0].toFixed(2);
+      var epy=document.getElementById('epy');if(epy)epy.value=d.pos[1].toFixed(2);
+      var epz=document.getElementById('epz');if(epz)epz.value=d.pos[2].toFixed(2);
+      var etx=document.getElementById('etx');if(etx)etx.value=d.target[0].toFixed(2);
+      var ety=document.getElementById('ety');if(ety)ety.value=d.target[1].toFixed(2);
+      var etz=document.getElementById('etz');if(etz)etz.value=d.target[2].toFixed(2);
+      toast('视角坐标已自动填入！');
+    }catch(e){}
+  },500);
+}
+
+function reSeed(){
+  if(!confirm('将清空所有数据并重新导入初始数据，确定吗？'))return;
+  fetch(API+'/seed',{method:'POST'}).then(function(){toast('数据已重置');loadData()}).catch(function(){toast('重置失败')});
+}
+
+// ─── Load data ───
+function loadData(){
+  Promise.all([
+    fetch(API+'/views').then(function(r){return r.json()}).then(function(d){viewsData=d}),
+    fetch(API+'/overrides').then(function(r){return r.json()}).then(function(d){overridesData=d})
+  ]).then(function(){
+    document.getElementById('sViews').textContent=viewsData.length;
+    document.getElementById('sOverrides').textContent=overridesData.length;
+    document.getElementById('sActive').textContent=viewsData.filter(function(v){return v.isActive}).length;
+    renderViewsTable();
+  }).catch(function(){
+    document.getElementById('viewsBody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink-soft)">无法连接后端服务</td></tr>';
+  });
+}
+
+// ─── Boot ───
+window.onload=function(){
+  initCharts();
+  initThreePreview();
+  renderMockTable();
+  loadData();
+  // Show data page mock charts immediately (to avoid ECharts resize issues)
+  initMockCharts();
+};
+</script>
+</body>
+</html>
