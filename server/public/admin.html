@@ -342,18 +342,18 @@ function initMockCharts(){
     var colorPalette=['#FFBC0A','#D99A00','#38BDF8','#EF4444'];
     var ch=echarts.init(el);ch.setOption({
       tooltip:{trigger:'item',formatter:function(p){
-        var indicators=['马力','扭矩(Nm)','极速(km/h)','轻量化','性价比'];
+        var labels=['马力','扭矩(Nm)','极速(km/h)','重量(kg)','售价(万$)'];
         var html='<b>'+p.seriesName+'</b><br/>';
-        for(var i=0;i<indicators.length;i++) html+=indicators[i]+': '+p.value[i]+'<br/>';
+        for(var i=0;i<labels.length;i++) html+=labels[i]+': '+p.value[i]+'<br/>';
         return html;
       }},
       legend:{data:rd.map(function(d){return d.name.split(' ').slice(0,2).join(' ')}),
         textStyle:{color:'#9CA0B0',fontSize:10},top:0,left:'center',itemWidth:14,itemHeight:8},
       radar:{center:['50%','55%'],radius:'60%',
-        indicator:[{name:'马力',max:2000},{name:'扭矩(Nm)',max:2500},{name:'极速(km/h)',max:500},{name:'轻量化',max:10},{name:'性价比',max:10}],
+        indicator:[{name:'马力',max:2000},{name:'扭矩(Nm)',max:2500},{name:'极速(km/h)',max:500},{name:'重量(kg)',max:2500},{name:'售价(万$)',max:400}],
       axisName:{color:'#9CA0B0',fontSize:11},splitArea:{areaStyle:{color:['rgba(255,188,10,0.03)','rgba(255,188,10,0.08)']}},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
       series:[{type:'radar',data:rd.map(function(d,i){return{
-        value:[d.hp,d.torque,d.topSpeed,+(d.weight/200).toFixed(1),+(d.price/40).toFixed(1)],
+        value:[d.hp,d.torque,d.topSpeed,d.weight,d.price],
         name:d.name.split(' ').slice(0,2).join(' '),
         lineStyle:{color:colorPalette[i],width:2},
         areaStyle:{color:colorPalette[i],opacity:0.08},
