@@ -1,11 +1,9 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
 import gsap from 'gsap'
-import { useGSAP } from '@gsap/react'
-gsap.registerPlugin(useGSAP)
 
 const MODEL_URL='/models/hennessy/scene.gltf',HDR_URL='/env/studio_small_09_1k.hdr'
 const DOOR_OPEN_ANGLE=THREE.MathUtils.degToRad(62),Y_AXIS=new THREE.Vector3(0,1,0),X_AXIS=new THREE.Vector3(1,0,0)
@@ -43,8 +41,8 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
   const {camRef,ctrlRef,drRef,wrRef,dTlRef,wsTweenRef,mTlRef,hitRef,allViews,wsDataRef}=sceneRefs
   const cvsRef=useRef<HTMLDivElement>(null)
 
-  useGSAP((_ctx,contextSafe)=>{
-    const c=scopeRef.current,h=cvsRef.current;if(!c||!h||!contextSafe)return
+  useEffect(()=>{
+    const c=scopeRef.current,h=cvsRef.current;if(!c||!h)return
     const sc=new THREE.Scene();const cam=new THREE.PerspectiveCamera(38,h.clientWidth/h.clientHeight,0.02,1000)
     cam.position.set(20,8,20);camRef.current=cam
     const re=new THREE.WebGLRenderer({antialias:true,alpha:true})
@@ -74,7 +72,7 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
     const shM=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sc3),transparent:true,depthWrite:false,opacity:0})
     const sh=new THREE.Mesh(new THREE.PlaneGeometry(7,7),shM);sh.rotation.x=-Math.PI/2;sh.position.y=0.002;sc.add(sh)
     const pmrem=new THREE.PMREMGenerator(re);pmrem.compileEquirectangularShader()
-    new RGBELoader().load(HDR_URL,contextSafe((tex)=>{sc.environment=pmrem.fromEquirectangular(tex).texture;tex.dispose();pmrem.dispose()}),undefined,()=>pmrem.dispose())
+    new RGBELoader().load(HDR_URL,(tex)=>{sc.environment=pmrem.fromEquirectangular(tex).texture;tex.dispose();pmrem.dispose()},undefined,()=>pmrem.dispose())
 
     const ctrl=new OrbitControls(cam,re.domElement);ctrl.enableDamping=true;ctrl.dampingFactor=0.08;ctrl.minDistance=2.5;ctrl.maxDistance=25
     ctrl.maxPolarAngle=Math.PI/2-0.02
@@ -97,7 +95,7 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
     ct.to(prRef.current,{opacity:1,duration:0.4},0.75);ct.to(lsRef.current,{opacity:1,duration:0.4},0.9)
 
     const loader=new GLTFLoader()
-    loader.load(MODEL_URL,contextSafe((gltf)=>{
+    loader.load(MODEL_URL,(gltf)=>{
       const m=gltf.scene,b=new THREE.Box3().setFromObject(m),cn=b.getCenter(new THREE.Vector3())
       m.position.sub(cn);m.position.y-=b.min.y-cn.y
       m.traverse((o)=>{const x=o as THREE.Mesh;if(x.isMesh){x.castShadow=true;x.receiveShadow=false;const ma=Array.isArray(x.material)?x.material:[x.material];for(const mat of ma)if(mat.name&&/window|glass/i.test(mat.name))mat.side=THREE.DoubleSide}})
@@ -143,13 +141,13 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
       },6.0)
       orbitTL.to([ltRef.current,ldRef.current,prRef.current,lsRef.current,document.querySelector('.loading-sub')],{opacity:0,y:-8,duration:0.35,stagger:0.025},6.5)
       mTlRef.current=orbitTL;setProg(100);orbitTL.play()
-    }),(xhr)=>{if(xhr.total)setProg(Math.round((xhr.loaded/xhr.total)*100))},()=>{})
+    },(xhr)=>{if(xhr.total)setProg(Math.round((xhr.loaded/xhr.total)*100))},()=>{})
 
     return()=>{
       gsap.ticker.remove(tick);dTlRef.current?.kill();wsTweenRef.current?.kill();mTlRef.current?.kill();ctrl.dispose();re.dispose()
       if(re.domElement.parentNode===h)h.removeChild(re.domElement);sc.traverse((m)=>{const x=m as THREE.Mesh;if(x.isMesh){x.geometry?.dispose();const ma=x.material;if(Array.isArray(ma))ma.forEach(y=>y.dispose());else ma?.dispose()}})
     }
-  },{scope:scopeRef})
+  },[])
 
   return <div className="canvas-host" ref={cvsRef}/>
 }
