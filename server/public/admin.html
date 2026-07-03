@@ -13,7 +13,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
 .root{display:flex;flex:1;min-height:0}
 .sidebar{flex:0 0 clamp(180px,18vw,220px);background:var(--surface);border-right:1px solid var(--rule);padding:24px 20px;display:flex;flex-direction:column;min-width:0;height:100vh}
 .main{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;padding:28px 32px}
-.page{display:none;min-height:0}.page.active{display:block;min-height:0}
+.page{display:none;min-height:0}.page.active{display:block;min-height:0;animation:pageIn 0.35s ease}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 /* ───── Custom scrollbar ───── */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
