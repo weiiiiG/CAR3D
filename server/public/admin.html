@@ -26,7 +26,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
 .sidebar-nav{display:flex;flex-direction:column;gap:4px}
 .sidebar-nav a{padding:10px 14px;border-radius:4px;color:var(--ink-mute);text-decoration:none;font-size:13px;font-weight:500;transition:.15s;cursor:pointer}
 .sidebar-nav a:hover,.sidebar-nav a.active{background:var(--accent-dim);color:var(--accent)}
-.sidebar-status{margin-top:auto;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+.sidebar-3d{margin-top:16px;padding:10px 14px;border-radius:4px;background:rgba(255,188,10,0.12);color:var(--accent);text-decoration:none;font-size:13px;font-weight:600;text-align:center;cursor:pointer;transition:.15s;display:block}
+.sidebar-3d:hover{background:var(--accent);color:var(--bg)}
+.sidebar-status{margin-top:12px;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
 .sidebar-status .dot{width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block}
 .main{flex:1;overflow-y:auto;padding:28px 32px}
 .page{display:none}.page.active{display:block}
@@ -95,6 +97,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
     <a onclick="switchPage('data')" data-page="data">数据概览</a>
     <a onclick="switchPage('settings')" data-page="settings">设置</a>
   </div>
+  <a class="sidebar-3d" onclick="window.open('http://localhost:5180','_blank')">返回 3D 展示</a>
   <div class="sidebar-status">
     <span class="dot"></span> 后端运行中 <span style="margin-left:auto;font-size:10px">v1.0</span>
   </div>
@@ -198,12 +201,20 @@ function switchPage(name){
   document.querySelectorAll('[data-page]').forEach(function(a){a.classList.remove('active')});
   document.getElementById('page-'+name).classList.add('active');
   document.querySelector('[data-page="'+name+'"]').classList.add('active');
+  // 切页时重新初始化图表以触发动画
+  if(name==='dashboard'){dashCharts.forEach(function(c){try{c.dispose()}catch(e){}});initCharts();}
   if(name==='data') initMockCharts();
 }
 
 // ─── Dashboard charts ───
+var dashCharts=[];
 function initCharts(){
-  echarts.init(document.getElementById('cRadar')).setOption({
+  dashCharts=[];
+  function makeChart(id,opt){
+    var ch=echarts.init(document.getElementById(id));
+    ch.setOption(opt);dashCharts.push(ch);
+  }
+  makeChart('cRadar',{
     tooltip:{trigger:'item',formatter:function(p){
       var html='<b>'+p.name+'</b><br/>';
       var labels=[['马力',' hp'],['扭矩',' Nm'],['极速',' km/h'],['0-100','s'],['下压力',' kg']];
@@ -216,29 +227,26 @@ function initCharts(){
     splitLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
     series:[{type:'radar',data:[{value:[1244,1155,301,2.7,450],name:'Venom GT'}],areaStyle:{color:'rgba(255,188,10,0.25)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'},
       emphasis:{lineStyle:{width:3,color:'#FFBC0A'},areaStyle:{color:'rgba(255,188,10,0.4)'}}}
-    ],
-    animationDuration:800,animationEasing:'elasticOut'
+    ]
   });
-  echarts.init(document.getElementById('cBar')).setOption({
+  makeChart('cBar',{
     tooltip:{trigger:'axis',formatter:function(p){return p[0].name+': '+p[0].value+'mm'}},
     xAxis:{type:'category',data:['车长','车宽','车高','轴距'],axisLabel:{color:'#9CA0B0',fontSize:11,interval:0},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
     yAxis:{type:'value',axisLabel:{color:'#5C5F6E',fontSize:10,formatter:'{value}mm'},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
     series:[{type:'bar',data:[4650,1960,1130,2800],itemStyle:{color:'#FFBC0A'},barMaxWidth:50,
       label:{show:true,position:'top',color:'#FFBC0A',fontSize:10,formatter:function(p){return p.value+'mm'}}}],
-    grid:{top:16,bottom:28,left:56,right:12},
-    animationDuration:600,animationEasing:'bounceOut'
+    grid:{top:16,bottom:28,left:56,right:12}
   });
-  echarts.init(document.getElementById('cPie')).setOption({
+  makeChart('cPie',{
     tooltip:{trigger:'item',formatter:'{b}: {c}% ({d}%)'},
     series:[{type:'pie',radius:['30%','60%'],center:['50%','52%'],roseType:'radius',
       data:[
         {value:45,name:'碳纤维',itemStyle:{color:'#2D3040'}},{value:30,name:'Alcantara',itemStyle:{color:'#6B7280'}},
         {value:15,name:'皮革',itemStyle:{color:'#FFBC0A'}},{value:10,name:'铝合金',itemStyle:{color:'#D99A00'}}],
       label:{color:'#9CA0B0',fontSize:11,formatter:'{b}\n{d}%'},
-      emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.3)'}}}],
-    animationDuration:800,animationEasing:'cubicOut'
+      emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.3)'}}}]
   });
-  echarts.init(document.getElementById('cTrend')).setOption({
+  makeChart('cTrend',{
     tooltip:{trigger:'axis'},
     legend:{data:['前脸','侧颜','座舱','内饰'],textStyle:{color:'#9CA0B0',fontSize:10},itemWidth:12,itemHeight:8,top:0,right:0},
     xAxis:{type:'category',data:['1月','2月','3月','4月','5月','6月'],axisLabel:{color:'#9CA0B0',fontSize:11,interval:0},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
@@ -255,8 +263,7 @@ function initCharts(){
         areaStyle:{color:'rgba(107,114,128,0.08)'},symbol:'triangle',symbolSize:6},
       {name:'内饰',type:'line',data:[80,110,145,180,220,260],smooth:true,lineStyle:{color:'#5C5F6E',width:2},itemStyle:{color:'#5C5F6E'},
         areaStyle:{color:'rgba(92,95,110,0.08)'},symbol:'rect',symbolSize:6}
-    ],
-    animationDuration:1000,animationEasing:'quadraticOut'
+    ]
   });
 }
 
