@@ -71,7 +71,7 @@ const SEED_DATA = [
     chartConfig: {
       xAxis: { type: 'category', data: ['Carbon','Steel','Aluminium'], axisLabel: { color:'#92949E', fontSize:9 }, axisLine: { lineStyle: { color:'rgba(228,229,235,0.18)' } } },
       yAxis: { type: 'value', name: 'kg', nameTextStyle: { color:'#6B7280' }, axisLabel: { color:'#6B7280' }, splitLine: { lineStyle: { color:'rgba(228,229,235,0.08)' } } },
-      series: [{ type:'bar', data:[2.7,8.5,5.1], itemStyle: { color:(p:any)=>['#FFBC0A','#6B7280','#8B8FA0'][p.dataIndex] } }],
+      series: [{ type:'bar', data:[2.7,8.5,5.1], itemStyle: { color:'#FFBC0A' } }],
     },
   },
   {

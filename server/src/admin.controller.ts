@@ -5,6 +5,6 @@ import * as path from 'path';
 export class AdminController {
   @Get()
   getAdmin(@Res() res: any) {
-    res.sendFile(path.join(__dirname, '../public/admin.html'));
+    res.sendFile(path.join(__dirname, '../../public/admin.html'));
   }
 }
