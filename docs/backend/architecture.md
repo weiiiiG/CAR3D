@@ -12,7 +12,7 @@ server/
 │   ├── prisma/                # PrismaService（全局单例）
 │   ├── views/                 # 视角管理模块（CRUD + overrides）
 │   ├── mock-vehicles/         # Mock 车辆数据模块
-│   ├── seed/                  # 初始化数据导入（自动运行）
+│   ├── seed/                  # 初始化数据导入（views + mock_vehicles，自动运行）
 │   └── @generated/            # Prisma Client 生成代码
 ├── public/                    # 静态文件（管理后台 admin.html）
 └── dist/                      # 编译产出
@@ -39,6 +39,7 @@ View 的 key 是字符串主键，ViewOverride 通过 viewKey 外键关联。
 4. **CORS 配置**：前端在 localhost:5180，需 enableCors 允许该 origin。
 5. **Module 编译路径**：nest build 输出为 dist/src/，入口为 dist/src/main.js（不是 dist/main.js）。
 6. **chartConfig 序列化**：ECharts 配置中的 Function 无法存入 Prisma JSON 列，Seed 数据中需移除函数。
+7. **class-validator 版本兼容**：class-validator 0.14+ 引入了 ESM-only 依赖（如 libphonenumber-js），在 NestJS CommonJS 模式下需确保 `target` 编译选项与 `module` 兼容。本项目使用 0.15.x，若升级需同步检查构建配置。
 
 ## 启动
 ```bash

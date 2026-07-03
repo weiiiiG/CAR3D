@@ -26,3 +26,4 @@ npm run start:dev
 2. PostgreSQL 列名大小写: Prisma schema 用 camelCase，SQL 中需双引号
 3. chartConfig 不能含 Function，seed 数据需移除 ECharts 回调函数
 4. dist 输出在 dist/src/，AdminController 静态文件路径需 `../../public/admin.html`
+5. **class-validator 版本兼容**：class-validator 0.14+ 依赖 ESM-only 包（如 libphonenumber-js），在 CommonJS 模式下可能报错。锁定到 0.15.x 并确保 tsconfig `target: ES2023` 与 `experimentalDecorators` 配合使用。

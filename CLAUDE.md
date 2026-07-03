@@ -21,9 +21,9 @@ npm run start:dev
 ```
 /3D/                    前端 (Vite + React + Three.js + GSAP)
 /3D/server/             后端 (NestJS + Prisma + PostgreSQL)
-├── prisma/schema.prisma 数据库模型
+├── prisma/schema.prisma 数据库模型 (Prisma ORM)
 ├── src/{views,mock-vehicles,seed,prisma}/
-└── public/admin.html    管理后台页面
+└── public/admin.html    管理后台页面（仪表盘/视角管理/数据概览/设置 共 4 页）
 /3D/docs/               文档体系
 ├── backend/{architecture,api,database,CLAUDE}.md
 └── frontend/{architecture,CLAUDE}.md

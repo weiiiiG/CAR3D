@@ -39,3 +39,13 @@ npm run dev          # 开发服务器 → localhost:5180
 ```
 feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 重构
 ```
+
+## 踩坑记录
+
+1. **HMR 后 GSAP timeline 重复执行**：Vite HMR 更新组件时，`useGSAP` 的 cleanup 可能未正确销毁旧 timeline，导致多次初始化。确保 `useRef` 存储的 timeline 在 cleanup 中执行 `kill()`。
+2. **Overlay z-index 层级**：
+   - LoadingOverlay: `z-index: 100`
+   - LoginModal / ViewManagerPanel: `z-index: 50`
+   - Toast 提示: `z-index: 200`
+   - 确保 Toast 始终在最顶层。
+3. **OrbitControls 与弹窗交互冲突**：弹窗（AnnotationPanel / LoginModal）打开时，OrbitControls 仍然响应鼠标事件，导致视角误操作。解决方案：弹窗显示时调用 `ctrlRef.current.enabled = false`，关闭时恢复 `true`。

@@ -33,5 +33,5 @@
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| POST | `/api/seed` | 重新导入所有初始数据 |
+| POST | `/api/seed` | 重新导入所有初始数据（views + mock_vehicles） |
 | GET | `/admin` | 管理后台页面 |

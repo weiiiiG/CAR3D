@@ -31,12 +31,24 @@ App
 ├── Three.js 场景 (useGSAP)
 │   ├── 模型加载 + Hotspots
 │   └── OrbitControls + Ticker
+├── 加载动画 (loading-overlay)
 ├── HUD 按钮栏 (hud-bar)
 │   ├── 6 个内置视角按钮
 │   ├── 重置按钮
 │   └── 齿轮图标（管理入口）
 ├── 注解面板 (annotation-panel)
-├── 加载动画 (loading-overlay)
-├── 管理员登录弹窗
-└── 视角调整面板 (mgmt-panel)
+│   ├── 规格参数展示
+│   └── ECharts 图表
+├── 管理员登录弹窗 (login-modal)
+├── 3D 坐标捕获面板 (capture-panel)
+└── 视角调整面板 (mgmt-panel / view-manager)
 ```
+
+## 捕获工作流 (Capture Workflow)
+
+1. 管理后台点击「从 3D 场景获取坐标」→ 新窗口打开 `/?capture=<key>`
+2. 前端检测到 `?capture` 参数 → 进入捕获模式（CapturePanel 显示）
+3. 用户在 3D 场景中自由调整视角（OrbitControls）
+4. 捕获面板实时显示 `cam.position` 坐标
+5. 点击「确认保存」→ 坐标写入 `localStorage` → admin 页面轮询读取并填入表单
+6. 点击「取消」→ 退出捕获模式，关闭窗口
