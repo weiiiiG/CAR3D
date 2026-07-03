@@ -26,7 +26,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
 .sidebar-nav{display:flex;flex-direction:column;gap:4px}
 .sidebar-nav a{padding:10px 14px;border-radius:4px;color:var(--ink-mute);text-decoration:none;font-size:13px;font-weight:500;transition:.15s;cursor:pointer}
 .sidebar-nav a:hover,.sidebar-nav a.active{background:var(--accent-dim);color:var(--accent)}
-.sidebar-3d{margin-top:16px;padding:10px 14px;border-radius:4px;background:rgba(255,188,10,0.12);color:var(--accent);text-decoration:none;font-size:13px;font-weight:600;text-align:center;cursor:pointer;transition:.15s;display:block}
+.sidebar-3d{padding:10px 14px;border-radius:4px;background:rgba(255,188,10,0.12);color:var(--accent);text-decoration:none;font-size:13px;font-weight:600;text-align:center;cursor:pointer;transition:.15s;display:block}
 .sidebar-3d:hover{background:var(--accent);color:var(--bg)}
 .sidebar-status{margin-top:12px;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
 .sidebar-status .dot{width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block}
@@ -97,10 +97,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
     <a onclick="switchPage('data')" data-page="data">数据概览</a>
     <a onclick="switchPage('settings')" data-page="settings">设置</a>
   </div>
-  <a class="sidebar-3d" onclick="window.open('http://localhost:5180','_blank')">返回 3D 展示</a>
+  <div style="flex:1;min-height:4px"></div>
   <div class="sidebar-status">
     <span class="dot"></span> 后端运行中 <span style="margin-left:auto;font-size:10px">v1.0</span>
   </div>
+  <a class="sidebar-3d" onclick="window.open('http://localhost:5180','_blank')">返回 3D 展示</a>
 </div>
 
 <div class="main">
@@ -285,7 +286,7 @@ function initMockCharts(){
       xAxis:{type:'category',data:sorted.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:0},axisLine:{show:false}},
       yAxis:{type:'value',name:'hp',nameTextStyle:{color:'#5C5F6E',fontSize:10},axisLabel:{color:'#5C5F6E',fontSize:9},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
       series:[{type:'bar',data:sorted.map(function(d,i){return{value:d.hp,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:28,
-        label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:'{c}'}}],
+        label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:'{c}'},animationDuration:700,animationEasing:'bounceOut'}],
       grid:{top:12,bottom:36,left:40,right:10}
     });mockCharts.push(ch);
   }
@@ -298,7 +299,7 @@ function initMockCharts(){
       xAxis:{type:'category',data:sorted2.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:0},axisLine:{show:false}},
       yAxis:{type:'value',name:'秒',nameTextStyle:{color:'#5C5F6E',fontSize:10},axisLabel:{color:'#5C5F6E',fontSize:9},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
       series:[{type:'bar',data:sorted2.map(function(d,i){return{value:d.acceleration,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:28,
-        label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:function(p){return p.value+'s'}}}],
+        label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:function(p){return p.value+'s'}},animationDuration:700,animationEasing:'bounceOut'}],
       grid:{top:12,bottom:36,left:36,right:10}
     });mockCharts.push(ch);
   }
@@ -311,7 +312,7 @@ function initMockCharts(){
     var ch=echarts.init(el);ch.setOption({
       tooltip:{trigger:'item',formatter:'{b}: {c} 款 ({d}%)'},
       series:[{type:'pie',radius:['20%','55%'],center:['50%','55%'],data:pieData.map(function(d){return{name:d.name,value:d.value,itemStyle:{color:colors[d.name]||'#6B7280'}}}),
-      label:{color:'#9CA0B0',fontSize:11,formatter:'{b}\n{d}%'},emphasis:{label:{fontSize:13,fontWeight:'bold'}}}],
+      label:{color:'#9CA0B0',fontSize:11,formatter:'{b}\n{d}%'},emphasis:{label:{fontSize:13,fontWeight:'bold'}},animationDuration:800,animationEasing:'elasticOut'}],
     });mockCharts.push(ch);
   }
 
@@ -351,7 +352,7 @@ function initMockCharts(){
       xAxis:{type:'category',data:sorted3.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:0},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
       yAxis:{type:'value',name:'km/h',nameTextStyle:{color:'#5C5F6E',fontSize:10},axisLabel:{color:'#5C5F6E',fontSize:9},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
       series:[{type:'bar',data:sorted3.map(function(d,i){return{value:d.topSpeed,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:28,
-        label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:'{c}'}}],
+        label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:'{c}'},animationDuration:700,animationEasing:'bounceOut'}],
       grid:{top:12,bottom:36,left:40,right:10}
     });mockCharts.push(ch);
   }
