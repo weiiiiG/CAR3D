@@ -1,28 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { MockVehicle } from './mock-vehicle.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class MockVehiclesService {
-  constructor(
-    @InjectRepository(MockVehicle)
-    private repo: Repository<MockVehicle>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  findAll(): Promise<MockVehicle[]> {
-    return this.repo.find({ order: { year: 'DESC', hp: 'DESC' } });
+  findAll() { return this.prisma.mockVehicle.findMany({ orderBy: { year: 'asc' } }); }
+
+  async findOne(id: number) {
+    const v = await this.prisma.mockVehicle.findUnique({ where: { id } });
+    if (!v) throw new NotFoundException();
+    return v;
   }
 
-  findOne(id: number): Promise<MockVehicle> {
-    return this.repo.findOne({ where: { id } });
-  }
+  async create(data: any) { return this.prisma.mockVehicle.create({ data }); }
 
-  create(dto: Partial<MockVehicle>): Promise<MockVehicle> {
-    return this.repo.save(dto);
-  }
-
-  async remove(id: number): Promise<void> {
-    await this.repo.delete(id);
+  async remove(id: number) {
+    await this.findOne(id);
+    await this.prisma.mockVehicle.delete({ where: { id } });
   }
 }

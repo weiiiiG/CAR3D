@@ -91,6 +91,21 @@ const SEED_DATA = [
   },
 ];
 
+const MOCK_VEHICLE_DATA = [
+  { name:'Hennessy Venom GT', brand:'Hennessy', country:'USA', year:2010, hp:1244, torque:1155, acceleration:2.7, topSpeed:301, weight:1350, engine:'V8 双涡轮', price:95, fuelConsumption:19.8, displacement:6.6, driveType:'后驱', category:'燃油' },
+  { name:'Koenigsegg Agera RS', brand:'Koenigsegg', country:'Sweden', year:2015, hp:1360, torque:1011, acceleration:2.8, topSpeed:447, weight:1395, engine:'V8 双涡轮', price:250, fuelConsumption:18.5, displacement:5.0, driveType:'后驱', category:'燃油' },
+  { name:'Bugatti Chiron', brand:'Bugatti', country:'France', year:2016, hp:1579, torque:1600, acceleration:2.4, topSpeed:420, weight:1995, engine:'W16 四涡轮', price:300, fuelConsumption:22.5, displacement:8.0, driveType:'四驱', category:'燃油' },
+  { name:'Koenigsegg Jesko', brand:'Koenigsegg', country:'Sweden', year:2020, hp:1603, torque:1500, acceleration:2.5, topSpeed:483, weight:1420, engine:'V8 双涡轮', price:280, fuelConsumption:17.0, displacement:5.0, driveType:'后驱', category:'燃油' },
+  { name:'Rimac Nevera', brand:'Rimac', country:'Croatia', year:2021, hp:1914, torque:2360, acceleration:1.8, topSpeed:412, weight:2150, engine:'电动四电机', price:240, fuelConsumption:0, displacement:0, driveType:'四驱', category:'电动' },
+  { name:'SSC Tuatara', brand:'SSC', country:'USA', year:2020, hp:1750, torque:1340, acceleration:2.5, topSpeed:455, weight:1247, engine:'V8 双涡轮', price:190, fuelConsumption:16.5, displacement:6.9, driveType:'后驱', category:'燃油' },
+  { name:'McLaren Speedtail', brand:'McLaren', country:'UK', year:2019, hp:1070, torque:1150, acceleration:2.9, topSpeed:403, weight:1430, engine:'V8 混动', price:225, fuelConsumption:11.5, displacement:4.0, driveType:'后驱', category:'混动' },
+  { name:'Aston Martin Valkyrie', brand:'Aston Martin', country:'UK', year:2021, hp:1160, torque:900, acceleration:2.5, topSpeed:362, weight:1030, engine:'V12 自吸', price:320, fuelConsumption:15.2, displacement:6.5, driveType:'后驱', category:'混动' },
+  { name:'Porsche 918 Spyder', brand:'Porsche', country:'Germany', year:2013, hp:887, torque:940, acceleration:2.6, topSpeed:345, weight:1634, engine:'V8 混动', price:185, fuelConsumption:8.5, displacement:4.6, driveType:'四驱', category:'混动' },
+  { name:'Ferrari LaFerrari', brand:'Ferrari', country:'Italy', year:2013, hp:963, torque:900, acceleration:2.6, topSpeed:349, weight:1585, engine:'V12 混动', price:220, fuelConsumption:12.8, displacement:6.3, driveType:'后驱', category:'混动' },
+  { name:'McLaren P1', brand:'McLaren', country:'UK', year:2013, hp:916, torque:900, acceleration:2.8, topSpeed:350, weight:1495, engine:'V8 混动', price:186, fuelConsumption:10.2, displacement:3.8, driveType:'后驱', category:'混动' },
+  { name:'Lamborghini Revuelto', brand:'Lamborghini', country:'Italy', year:2023, hp:1015, torque:1062, acceleration:2.5, topSpeed:350, weight:1772, engine:'V12 混动', price:160, fuelConsumption:14.5, displacement:6.5, driveType:'四驱', category:'混动' },
+];
+
 @Injectable()
 export class SeedService implements OnModuleInit {
   constructor(private prisma: PrismaService) {}
@@ -99,13 +114,22 @@ export class SeedService implements OnModuleInit {
     const count = await this.prisma.view.count();
     if (count > 0) {
       console.log(`[Seed] views 表已有 ${count} 条数据，跳过 seed`);
-      return;
+    } else {
+      console.log('[Seed] 初始化视角数据...');
+      for (const data of SEED_DATA) {
+        await this.prisma.view.create({ data: data as any });
+      }
+      console.log(`[Seed] 成功导入 ${SEED_DATA.length} 个视角`);
     }
-    console.log('[Seed] 初始化视角数据...');
-    for (const data of SEED_DATA) {
-      await this.prisma.view.create({ data: data as any });
+
+    const mvCount = await this.prisma.mockVehicle.count();
+    if (mvCount === 0) {
+      console.log('[Seed] 初始化模拟车辆数据...');
+      await this.prisma.mockVehicle.createMany({ data: MOCK_VEHICLE_DATA });
+      console.log(`[Seed] 成功导入 ${MOCK_VEHICLE_DATA.length} 辆模拟车辆`);
+    } else {
+      console.log(`[Seed] mock_vehicles 表已有 ${mvCount} 条数据，跳过 seed`);
     }
-    console.log(`[Seed] 成功导入 ${SEED_DATA.length} 个视角`);
   }
 
   async reSeed() {
@@ -113,6 +137,10 @@ export class SeedService implements OnModuleInit {
     for (const data of SEED_DATA) {
       await this.prisma.view.create({ data: data as any });
     }
-    return { message: `重新导入 ${SEED_DATA.length} 个视角` };
+
+    await this.prisma.mockVehicle.deleteMany();
+    await this.prisma.mockVehicle.createMany({ data: MOCK_VEHICLE_DATA });
+
+    return { message: `重新导入 ${SEED_DATA.length} 个视角、${MOCK_VEHICLE_DATA.length} 辆模拟车辆` };
   }
 }
