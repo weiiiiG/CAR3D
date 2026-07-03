@@ -253,36 +253,43 @@ function initThreePreview(){
 }
 
 // ─── Mock Charts (Data Overview page) ───
+var mockCharts=[];
 function initMockCharts(){
+  // 销毁旧实例
+  mockCharts.forEach(function(c){try{c.dispose()}catch(e){}});
+  mockCharts=[];
   try {
-    var c1=document.getElementById('mBar1');if(c1)echarts.init(c1).setOption({
-      xAxis:{type:'category',data:['Venom GT','Agera RS','Chiron','Jesko'],axisLabel:{color:'#9CA0B0',fontSize:9},axisLine:{show:false}},
-      yAxis:{show:false},series:[{type:'bar',data:[8,8,16,8],itemStyle:{color:function(p){return['#FFBC0A','#D99A00','#6B7280','#2D3040'][p.dataIndex]}}}],grid:{top:8,bottom:8,left:4,right:4}
-    });
-    var c2=document.getElementById('mBar2');if(c2)echarts.init(c2).setOption({
-      xAxis:{type:'category',data:['Venom GT','Agera RS','Chiron','Jesko'],axisLabel:{color:'#9CA0B0',fontSize:9},axisLine:{show:false}},
-      yAxis:{show:false},series:[{type:'bar',data:[2.7,2.8,2.4,2.5],itemStyle:{color:function(p){return['#FFBC0A','#D99A00','#6B7280','#2D3040'][p.dataIndex]}}}],grid:{top:8,bottom:8,left:4,right:4}
-    });
-    var c3=document.getElementById('mPie1');if(c3)echarts.init(c3).setOption({
+    var el,ch;
+    el=document.getElementById('mBar1');if(el){ch=echarts.init(el);ch.setOption({
+      xAxis:{type:'category',data:['Venom GT','Agera RS','Chiron','Jesko'],axisLabel:{color:'#9CA0B0',fontSize:9,interval:0},axisLine:{show:false}},
+      yAxis:{show:false},series:[{type:'bar',data:[8,8,16,8],itemStyle:{color:function(p){return['#FFBC0A','#D99A00','#6B7280','#2D3040'][p.dataIndex]}}}],grid:{top:12,bottom:24,left:8,right:8}
+    });mockCharts.push(ch)}
+    el=document.getElementById('mBar2');if(el){ch=echarts.init(el);ch.setOption({
+      xAxis:{type:'category',data:['Venom GT','Agera RS','Chiron','Jesko'],axisLabel:{color:'#9CA0B0',fontSize:9,interval:0},axisLine:{show:false}},
+      yAxis:{show:false},series:[{type:'bar',data:[2.7,2.8,2.4,2.5],itemStyle:{color:function(p){return['#FFBC0A','#D99A00','#6B7280','#2D3040'][p.dataIndex]}}}],grid:{top:12,bottom:24,left:8,right:8}
+    });mockCharts.push(ch)}
+    el=document.getElementById('mPie1');if(el){ch=echarts.init(el);ch.setOption({
       series:[{type:'pie',radius:['30%','50%'],data:[
         {value:1350,name:'Venom GT',itemStyle:{color:'#FFBC0A'}},{value:1395,name:'Agera RS',itemStyle:{color:'#D99A00'}},
         {value:1995,name:'Chiron',itemStyle:{color:'#6B7280'}},{value:1420,name:'Jesko',itemStyle:{color:'#2D3040'}}],
-      label:{color:'#9CA0B0',fontSize:9}}]
-    });
-    var c4=document.getElementById('mRadar');if(c4)echarts.init(c4).setOption({
+      label:{color:'#9CA0B0',fontSize:10}}]
+    });mockCharts.push(ch)}
+    el=document.getElementById('mRadar');if(el){ch=echarts.init(el);ch.setOption({
       radar:{indicator:[{name:'马力',max:2000},{name:'扭矩',max:1800},{name:'极速',max:500},{name:'下压力',max:800},{name:'轻量化',max:10}],
-      axisName:{color:'#9CA0B0',fontSize:9},splitArea:{areaStyle:{color:['rgba(255,188,10,0.03)','rgba(255,188,10,0.08)']}},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+      axisName:{color:'#9CA0B0',fontSize:10},splitArea:{areaStyle:{color:['rgba(255,188,10,0.03)','rgba(255,188,10,0.08)']}},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
       series:[{type:'radar',data:[
         {value:[1244,1155,301,450,7.5],name:'Venom GT'},{value:[1360,1011,447,610,6.8],name:'Agera RS'},
         {value:[1579,1600,420,500,4.5],name:'Chiron'},{value:[1603,1500,483,700,7.2],name:'Jesko'}],
       areaStyle:{opacity:0.05},lineStyle:{width:1.5}}]
-    });
-    var c5=document.getElementById('mLine');if(c5)echarts.init(c5).setOption({
-      xAxis:{type:'category',data:['Spa','Nürburgring','Laguna Seca','Monza','Silverstone'],axisLabel:{color:'#9CA0B0',fontSize:9},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
-      yAxis:{type:'value',name:'秒',nameTextStyle:{color:'#5C5F6E',fontSize:9},axisLabel:{color:'#5C5F6E',fontSize:8},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
-      series:[{type:'line',data:[132.5,398.0,87.5,118.2,96.8],smooth:true,lineStyle:{color:'#FFBC0A',width:2},areaStyle:{color:'rgba(255,188,10,0.12)'},itemStyle:{color:'#FFBC0A'}}]
-    });
-  }catch(e){console.log('Mock charts init error (expected if hidden):',e)}
+    });mockCharts.push(ch)}
+    el=document.getElementById('mLine');if(el){ch=echarts.init(el);ch.setOption({
+      xAxis:{type:'category',data:['Spa','Nürburgring','Laguna Seca','Monza','Silverstone'],axisLabel:{color:'#9CA0B0',fontSize:10,interval:0},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+      yAxis:{type:'value',name:'秒',nameTextStyle:{color:'#5C5F6E',fontSize:10},axisLabel:{color:'#5C5F6E',fontSize:9},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+      series:[{type:'line',data:[132.5,398.0,87.5,118.2,96.8],smooth:true,lineStyle:{color:'#FFBC0A',width:2},areaStyle:{color:'rgba(255,188,10,0.12)'},itemStyle:{color:'#FFBC0A'},label:{show:true,color:'#FFBC0A',fontSize:9,formatter:'{c}s'}}]
+    });mockCharts.push(ch)}
+  }catch(e){console.log('Mock charts init error:',e)}
+  // 延迟 resize 确保容器已渲染
+  setTimeout(function(){mockCharts.forEach(function(c){try{c.resize()}catch(e){}})},100);
 }
 
 // ─── Mock Table Data ───
