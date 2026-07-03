@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
+import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js'
 import gsap from 'gsap'
 
 const MODEL_URL='/models/hennessy/scene.gltf',HDR_URL='/env/studio_small_09_1k.hdr'
@@ -71,8 +71,7 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
     sx.fillStyle=sg;sx.fillRect(0,0,256,256)
     const shM=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sc3),transparent:true,depthWrite:false,opacity:0})
     const sh=new THREE.Mesh(new THREE.PlaneGeometry(7,7),shM);sh.rotation.x=-Math.PI/2;sh.position.y=0.002;sc.add(sh)
-    const pmrem=new THREE.PMREMGenerator(re);pmrem.compileEquirectangularShader()
-    new RGBELoader().load(HDR_URL,(tex)=>{sc.environment=pmrem.fromEquirectangular(tex).texture;tex.dispose();pmrem.dispose()},undefined,()=>pmrem.dispose())
+    new HDRLoader().load(HDR_URL,(tex)=>{tex.mapping=THREE.EquirectangularReflectionMapping;sc.environment=tex},undefined,()=>{})
 
     const ctrl=new OrbitControls(cam,re.domElement);ctrl.enableDamping=true;ctrl.dampingFactor=0.08;ctrl.minDistance=2.5;ctrl.maxDistance=25
     ctrl.maxPolarAngle=Math.PI/2-0.02

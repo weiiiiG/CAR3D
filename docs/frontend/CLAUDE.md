@@ -49,3 +49,6 @@ feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 
    - Toast 提示: `z-index: 200`
    - 确保 Toast 始终在最顶层。
 3. **OrbitControls 与弹窗交互冲突**：弹窗（AnnotationPanel / LoginModal）打开时，OrbitControls 仍然响应鼠标事件，导致视角误操作。解决方案：弹窗显示时调用 `ctrlRef.current.enabled = false`，关闭时恢复 `true`。
+4. **`useGSAP` 不能跨组件传递 scope**：子组件的 `useGSAP({scope: parentRef})` 会导致 GSAP 上下文无法正确初始化，回调被跳过。Three.js 场景初始化不需要 GSAP 上下文管理，应使用 `useEffect` 替代 `useGSAP`。
+5. **`contextSafe` 移除后残留括号**：去掉 `contextSafe((fn)=>{...})` 后多一个 `)`，Vite 编译时报 "Expected a semicolon" 错误。加载器回调参数括号需同步清理。
+6. **RGBELoader 已废弃**：Three.js 0.184 中 `RGBELoader` 替换为 `HDRLoader`。旧用法需 PMREMGenerator 处理，新用法直接 `HDRLoader.load()` 返回的 texture 设置 `mapping = EquirectangularReflectionMapping` 即可作为 `scene.environment`。

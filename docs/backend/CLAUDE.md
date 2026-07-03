@@ -27,3 +27,5 @@ npm run start:dev
 3. chartConfig 不能含 Function，seed 数据需移除 ECharts 回调函数
 4. dist 输出在 dist/src/，AdminController 静态文件路径需 `../../public/admin.html`
 5. **class-validator 版本兼容**：class-validator 0.14+ 依赖 ESM-only 包（如 libphonenumber-js），在 CommonJS 模式下可能报错。锁定到 0.15.x 并确保 tsconfig `target: ES2023` 与 `experimentalDecorators` 配合使用。
+6. **Prisma 7 强制需要 Driver Adapter**：PostgreSQL 连接必须通过 `@prisma/adapter-pg` + `pg.Pool` 传入，不能直接使用 `datasource.url`。
+7. **Prisma Client 生成路径**：Prisma 7 要求显式设置 `output` 路径。生成代码需在 `src/` 目录内，否则 NestJS 编译不会将其打包到 `dist/`。
