@@ -200,31 +200,51 @@ function switchPage(name){
 // ─── Dashboard charts ───
 function initCharts(){
   echarts.init(document.getElementById('cRadar')).setOption({
-    radar:{indicator:[{name:'马力',max:1500},{name:'扭矩',max:1200},{name:'极速',max:350},{name:'0-60',max:3.5},{name:'下压力',max:500}],
+    radar:{indicator:[{name:'马力',max:1500},{name:'扭矩(Nm)',max:1200},{name:'极速km/h',max:350},{name:'0-100s',max:3.5},{name:'下压力kg',max:500}],
     axisName:{color:'#9CA0B0',fontSize:10},splitArea:{areaStyle:{color:['rgba(255,188,10,0.04)','rgba(255,188,10,0.10)']}},
     splitLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
-    series:[{type:'radar',data:[{value:[1244,1155,301,2.7,450],name:'Venom GT'}],areaStyle:{color:'rgba(255,188,10,0.25)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'}}]
+    series:[{type:'radar',data:[{value:[1244,1155,301,2.7,450],name:'Venom GT'}],areaStyle:{color:'rgba(255,188,10,0.25)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'},
+      label:{show:true,color:'#FFBC0A',fontSize:9,formatter:function(p){return p.value}}}
+    ],
+    animationDuration:800,animationEasing:'elasticOut'
   });
   echarts.init(document.getElementById('cBar')).setOption({
-    xAxis:{type:'category',data:['车长','车宽','车高','轴距'],axisLabel:{color:'#9CA0B0',fontSize:10},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
-    yAxis:{type:'value',axisLabel:{color:'#5C5F6E'},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
-    series:[{type:'bar',data:[4650,1960,1130,2800],itemStyle:{color:'#FFBC0A'}}]
+    tooltip:{trigger:'axis',formatter:function(p){return p[0].name+': '+p[0].value+'mm'}},
+    xAxis:{type:'category',data:['车长','车宽','车高','轴距'],axisLabel:{color:'#9CA0B0',fontSize:10,interval:0},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+    yAxis:{type:'value',axisLabel:{color:'#5C5F6E',formatter:'{value}mm'},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+    series:[{type:'bar',data:[4650,1960,1130,2800],itemStyle:{color:'#FFBC0A'},barMaxWidth:40,
+      label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:function(p){return p.value+'mm'}}}],
+    grid:{top:12,bottom:24,left:48,right:12},
+    animationDuration:600,animationEasing:'bounceOut'
   });
   echarts.init(document.getElementById('cPie')).setOption({
-    series:[{type:'pie',radius:['35%','55%'],data:[
-      {value:45,name:'碳纤维',itemStyle:{color:'#2D3040'}},{value:30,name:'Alcantara',itemStyle:{color:'#6B7280'}},
-      {value:15,name:'皮革',itemStyle:{color:'#FFBC0A'}},{value:10,name:'铝合金',itemStyle:{color:'#D99A00'}}],
-    label:{color:'#9CA0B0',fontSize:10}}]
+    tooltip:{trigger:'item',formatter:'{b}: {c}% ({d}%)'},
+    series:[{type:'pie',radius:['35%','55%'],roseType:'radius',
+      data:[
+        {value:45,name:'碳纤维',itemStyle:{color:'#2D3040'}},{value:30,name:'Alcantara',itemStyle:{color:'#6B7280'}},
+        {value:15,name:'皮革',itemStyle:{color:'#FFBC0A'}},{value:10,name:'铝合金',itemStyle:{color:'#D99A00'}}],
+      label:{color:'#9CA0B0',fontSize:10,formatter:'{b}\n{d}%'},
+      emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.3)'}}}],
+    animationDuration:800,animationEasing:'cubicOut'
   });
   echarts.init(document.getElementById('cTrend')).setOption({
-    xAxis:{type:'category',data:['1月','2月','3月','4月','5月','6月'],axisLabel:{color:'#9CA0B0',fontSize:10},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
-    yAxis:{type:'value',axisLabel:{color:'#5C5F6E'},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
+    tooltip:{trigger:'axis'},
+    legend:{data:['前脸','侧颜','座舱','内饰'],textStyle:{color:'#9CA0B0',fontSize:10},itemWidth:10},
+    xAxis:{type:'category',data:['1月','2月','3月','4月','5月','6月'],axisLabel:{color:'#9CA0B0',fontSize:10,interval:0},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+    yAxis:{type:'value',axisLabel:{color:'#5C5F6E',formatter:'{value}次'},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
     series:[
-      {name:'前脸',type:'line',data:[320,402,480,534,590,650],smooth:true,lineStyle:{color:'#FFBC0A',width:2},areaStyle:{color:'rgba(255,188,10,0.1)'}},
-      {name:'侧颜',type:'line',data:[220,282,350,410,445,490],smooth:true,lineStyle:{color:'#D99A00',width:2},areaStyle:{color:'rgba(217,154,0,0.08)'}},
-      {name:'座舱',type:'line',data:[150,180,220,260,300,340],smooth:true,lineStyle:{color:'#6B7280',width:2},areaStyle:{color:'rgba(107,114,128,0.08)'}},
-      {name:'内饰',type:'line',data:[80,110,145,180,220,260],smooth:true,lineStyle:{color:'#5C5F6E',width:2},areaStyle:{color:'rgba(92,95,110,0.08)'}}
-    ]
+      {name:'前脸',type:'line',data:[320,402,480,534,590,650],smooth:true,lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'},
+        areaStyle:{color:'rgba(255,188,10,0.1)'},symbol:'circle',symbolSize:6,
+        label:{show:true,color:'#FFBC0A',fontSize:9}},
+      {name:'侧颜',type:'line',data:[220,282,350,410,445,490],smooth:true,lineStyle:{color:'#D99A00',width:2},itemStyle:{color:'#D99A00'},
+        areaStyle:{color:'rgba(217,154,0,0.08)'},symbol:'diamond',symbolSize:6,
+        label:{show:true,color:'#D99A00',fontSize:9}},
+      {name:'座舱',type:'line',data:[150,180,220,260,300,340],smooth:true,lineStyle:{color:'#6B7280',width:2},itemStyle:{color:'#6B7280'},
+        areaStyle:{color:'rgba(107,114,128,0.08)'},symbol:'triangle',symbolSize:6},
+      {name:'内饰',type:'line',data:[80,110,145,180,220,260],smooth:true,lineStyle:{color:'#5C5F6E',width:2},itemStyle:{color:'#5C5F6E'},
+        areaStyle:{color:'rgba(92,95,110,0.08)'},symbol:'rect',symbolSize:6}
+    ],
+    animationDuration:1000,animationEasing:'quadraticOut'
   });
 }
 
