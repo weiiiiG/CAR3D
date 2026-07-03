@@ -8,7 +8,7 @@ datasource db {
 }
 
 model View {
-  key           String         @id @default("") @db.VarChar(50)
+  key           String         @id @db.VarChar(50)
   label         String         @db.VarChar(100)
   description   String?        @db.Text
   spec          String?        @db.VarChar(200)
