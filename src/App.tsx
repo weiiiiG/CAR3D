@@ -432,17 +432,13 @@ function App(){
             pos:[cam.position.x,cam.position.y,cam.position.z],
             target:[ctrl.target.x,ctrl.target.y,ctrl.target.z]
           }))
-          alert('视角已保存！请返回管理后台继续操作。')
-          window.close()
+          alert('视角已保存！正在返回管理后台...')
+          window.location.href = 'http://localhost:3000/admin'
         }}>保存</button>
       <button className="hud-btn" style={{
         padding:'6px 10px',fontSize:11,borderRadius:4,border:'1px solid var(--rule)',
         background:'transparent',color:'var(--ink-mute)',cursor:'pointer'
-      }} onClick={()=>{setCaptureKey(null);window.close()}}>关闭</button>
-    </div>)}
-          <button className="mgmt-mini" onClick={()=>{setCaptureKey(null);window.close()}}>关闭</button>
-        </div>
-      </div>
+      }} onClick={()=>{setCaptureKey(null);window.location.href='http://localhost:3000/admin'}}>关闭</button>
     </div>)}
   </div>)
 }
