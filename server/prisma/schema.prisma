@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model View {
+  key           String         @id @default("") @db.VarChar(50)
+  label         String         @db.VarChar(100)
+  description   String?        @db.Text
+  spec          String?        @db.VarChar(200)
+  specCategory  String?        @db.VarChar(50)
+  posX          Float
+  posY          Float
+  posZ          Float
+  targetX       Float
+  targetY       Float
+  targetZ       Float
+  chartConfig   Json?
+  sortOrder     Int            @default(0)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  overrides     ViewOverride[]
+
+  @@map("views")
+}
+
+model ViewOverride {
+  id        Int      @id @default(autoincrement())
+  viewKey   String   @unique @db.VarChar(50)
+  posX      Float
+  posY      Float
+  posZ      Float
+  targetX   Float
+  targetY   Float
+  targetZ   Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  view      View     @relation(fields: [viewKey], references: [key], onDelete: Cascade)
+
+  @@map("view_overrides")
+}
+
+model MockVehicle {
+  id              Int      @id @default(autoincrement())
+  name            String   @db.VarChar(100)
+  brand           String   @db.VarChar(50)
+  country         String   @db.VarChar(50)
+  year            Int
+  hp              Int
+  torque          Int
+  acceleration    Float
+  topSpeed        Int
+  weight          Int
+  engine          String   @db.VarChar(100)
+  price           Float
+  fuelConsumption Float
+  displacement    Float
+  driveType       String   @db.VarChar(50)
+  category        String   @db.VarChar(50)
+
+  @@map("mock_vehicles")
+}
