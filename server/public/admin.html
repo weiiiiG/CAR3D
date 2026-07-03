@@ -228,7 +228,8 @@ function initCharts(){
     splitLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
     series:[{type:'radar',data:[{value:[1244,1155,301,2.7,450],name:'Venom GT'}],areaStyle:{color:'rgba(255,188,10,0.25)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'},
       emphasis:{lineStyle:{width:3,color:'#FFBC0A'},areaStyle:{color:'rgba(255,188,10,0.4)'}}}
-    ]
+    ],
+    animationDuration:800,animationEasing:'elasticOut'
   });
   makeChart('cBar',{
     tooltip:{trigger:'axis',formatter:function(p){return p[0].name+': '+p[0].value+'mm'}},
@@ -236,7 +237,8 @@ function initCharts(){
     yAxis:{type:'value',axisLabel:{color:'#5C5F6E',fontSize:10,formatter:'{value}mm'},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
     series:[{type:'bar',data:[4650,1960,1130,2800],itemStyle:{color:'#FFBC0A'},barMaxWidth:50,
       label:{show:true,position:'top',color:'#FFBC0A',fontSize:10,formatter:function(p){return p.value+'mm'}}}],
-    grid:{top:16,bottom:28,left:56,right:12}
+    grid:{top:16,bottom:28,left:56,right:12},
+    animationDuration:600,animationEasing:'bounceOut'
   });
   makeChart('cPie',{
     tooltip:{trigger:'item',formatter:'{b}: {c}% ({d}%)'},
@@ -245,7 +247,8 @@ function initCharts(){
         {value:45,name:'碳纤维',itemStyle:{color:'#2D3040'}},{value:30,name:'Alcantara',itemStyle:{color:'#6B7280'}},
         {value:15,name:'皮革',itemStyle:{color:'#FFBC0A'}},{value:10,name:'铝合金',itemStyle:{color:'#D99A00'}}],
       label:{color:'#9CA0B0',fontSize:11,formatter:'{b}\n{d}%'},
-      emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.3)'}}}]
+      emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.3)'}}}],
+    animationDuration:800,animationEasing:'cubicOut'
   });
   makeChart('cTrend',{
     tooltip:{trigger:'axis'},
@@ -264,7 +267,8 @@ function initCharts(){
         areaStyle:{color:'rgba(107,114,128,0.08)'},symbol:'triangle',symbolSize:6},
       {name:'内饰',type:'line',data:[80,110,145,180,220,260],smooth:true,lineStyle:{color:'#5C5F6E',width:2},itemStyle:{color:'#5C5F6E'},
         areaStyle:{color:'rgba(92,95,110,0.08)'},symbol:'rect',symbolSize:6}
-    ]
+    ],
+    animationDuration:1000,animationEasing:'quadraticOut'
   });
 }
 
