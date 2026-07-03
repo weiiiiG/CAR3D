@@ -1,58 +1,47 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { View } from './entities/view.entity';
-import { ViewOverride } from './entities/view-override.entity';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateViewDto } from './dto/create-view.dto';
-import { CreateOverrideDto } from './dto/create-override.dto';
 import { UpdateViewDto } from './dto/update-view.dto';
+import { CreateOverrideDto } from './dto/create-override.dto';
 
 @Injectable()
 export class ViewsService {
-  constructor(
-    @InjectRepository(View)
-    private viewsRepo: Repository<View>,
-    @InjectRepository(ViewOverride)
-    private overridesRepo: Repository<ViewOverride>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<View[]> {
-    return this.viewsRepo.find({ order: { sortOrder: 'ASC' } });
+  async findAll() {
+    return this.prisma.view.findMany({ orderBy: { sortOrder: 'asc' } });
   }
 
-  async findOne(key: string): Promise<View> {
-    const view = await this.viewsRepo.findOne({ where: { key } });
+  async findOne(key: string) {
+    const view = await this.prisma.view.findUnique({ where: { key } });
     if (!view) throw new NotFoundException(`View "${key}" not found`);
     return view;
   }
 
-  async create(dto: CreateViewDto): Promise<View> {
-    const existing = await this.viewsRepo.findOne({ where: { key: dto.key } });
+  async create(dto: CreateViewDto) {
+    const existing = await this.prisma.view.findUnique({ where: { key: dto.key } });
     if (existing) throw new ConflictException(`View "${dto.key}" already exists`);
-    return this.viewsRepo.save(dto);
+    return this.prisma.view.create({ data: dto as any });
   }
 
-  async update(key: string, dto: UpdateViewDto): Promise<View> {
-    const view = await this.findOne(key);
-    Object.assign(view, dto);
-    view.updatedAt = new Date();
-    return this.viewsRepo.save(view);
+  async update(key: string, dto: UpdateViewDto) {
+    await this.findOne(key);
+    return this.prisma.view.update({ where: { key }, data: dto as any });
   }
 
-  async remove(key: string): Promise<void> {
-    const view = await this.findOne(key);
-    await this.overridesRepo.delete({ viewKey: key });
-    await this.viewsRepo.remove(view);
+  async remove(key: string) {
+    await this.findOne(key);
+    await this.prisma.viewOverride.deleteMany({ where: { viewKey: key } });
+    await this.prisma.view.delete({ where: { key } });
   }
 
-  /** 返回合并后的视角列表（内置 + 覆盖） */
-  async findAllWithOverrides(): Promise<any[]> {
-    const views = await this.findAll();
-    const overrides = await this.overridesRepo.find();
-    const overrideMap = new Map(overrides.map(o => [o.viewKey, o]));
-
+  async findAllWithOverrides() {
+    const views = await this.prisma.view.findMany({
+      orderBy: { sortOrder: 'asc' },
+      include: { overrides: true },
+    });
     return views.map(v => {
-      const ov = overrideMap.get(v.key);
+      const ov = v.overrides?.[0] || null;
       return {
         ...v,
         overridePos: ov ? { x: ov.posX, y: ov.posY, z: ov.posZ } : null,
@@ -63,26 +52,20 @@ export class ViewsService {
     });
   }
 
-  async getOverrides(): Promise<ViewOverride[]> {
-    return this.overridesRepo.find();
+  async getOverrides() {
+    return this.prisma.viewOverride.findMany();
   }
 
-  async setOverride(dto: CreateOverrideDto): Promise<ViewOverride> {
+  async setOverride(dto: CreateOverrideDto) {
     await this.findOne(dto.viewKey);
-    const existing = await this.overridesRepo.findOne({ where: { viewKey: dto.viewKey } });
-    if (existing) {
-      Object.assign(existing, {
-        posX: dto.posX, posY: dto.posY, posZ: dto.posZ,
-        targetX: dto.targetX, targetY: dto.targetY, targetZ: dto.targetZ,
-        updatedAt: new Date(),
-      });
-      return this.overridesRepo.save(existing);
-    }
-    return this.overridesRepo.save(dto);
+    return this.prisma.viewOverride.upsert({
+      where: { viewKey: dto.viewKey },
+      update: { posX: dto.posX, posY: dto.posY, posZ: dto.posZ, targetX: dto.targetX, targetY: dto.targetY, targetZ: dto.targetZ },
+      create: dto as any,
+    });
   }
 
-  async deleteOverride(viewKey: string): Promise<void> {
-    const ov = await this.overridesRepo.findOne({ where: { viewKey } });
-    if (ov) await this.overridesRepo.remove(ov);
+  async deleteOverride(viewKey: string) {
+    await this.prisma.viewOverride.deleteMany({ where: { viewKey } });
   }
 }

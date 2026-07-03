@@ -1,7 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { View } from '../views/entities/view.entity';
+import { PrismaService } from '../prisma/prisma.service';
 
 const SEED_DATA = [
   {
@@ -95,30 +93,25 @@ const SEED_DATA = [
 
 @Injectable()
 export class SeedService implements OnModuleInit {
-  constructor(
-    @InjectRepository(View)
-    private viewsRepo: Repository<View>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async onModuleInit() {
-    const count = await this.viewsRepo.count();
+    const count = await this.prisma.view.count();
     if (count > 0) {
       console.log(`[Seed] views 表已有 ${count} 条数据，跳过 seed`);
       return;
     }
     console.log('[Seed] 初始化视角数据...');
     for (const data of SEED_DATA) {
-      const view = this.viewsRepo.create(data as any);
-      await this.viewsRepo.save(view);
+      await this.prisma.view.create({ data: data as any });
     }
     console.log(`[Seed] 成功导入 ${SEED_DATA.length} 个视角`);
   }
 
   async reSeed() {
-    await this.viewsRepo.clear();
+    await this.prisma.view.deleteMany();
     for (const data of SEED_DATA) {
-      const view = this.viewsRepo.create(data as any);
-      await this.viewsRepo.save(view);
+      await this.prisma.view.create({ data: data as any });
     }
     return { message: `重新导入 ${SEED_DATA.length} 个视角` };
   }
