@@ -88,13 +88,32 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
     };gsap.ticker.add(tick)
     window.addEventListener('resize',()=>{const w=h.clientWidth,wh=h.clientHeight;cam.aspect=w/wh;cam.updateProjectionMatrix();re.setSize(w,wh)})
     const ct=gsap.timeline({onComplete:()=>{loadDone=true;tryPlay()}})
+    // 步骤文字随加载进度变化
+    function updateLabel(p:number){
+      if(!lsRef.current)return
+      if(p>=100)lsRef.current.textContent='SYSTEM READY'
+      else if(p>70)lsRef.current.textContent='CALIBRATING'
+      else if(p>30)lsRef.current.textContent='LOADING ASSETS'
+      else lsRef.current.textContent='INITIALIZING'
+    }
+    // xhr 进度 — 更新进度数字 + 步骤文字
+    const onProgress=(xhr:ProgressEvent)=>{
+      if(!xhr.total)return
+      const pct=Math.round((xhr.loaded/xhr.total)*100)
+      setProg(pct);updateLabel(pct)
+    }
     ct.to('.loading-title .char',{y:0,opacity:1,duration:0.4,ease:'power2.out',stagger:0.025},0.15)
     ct.to('.loading-sub',{opacity:1,y:0,duration:0.4,ease:'power2.out'},0.5)
     ct.to(ldRef.current,{opacity:1,scaleX:1,duration:0.7,ease:'power3.out'},0.55)
     ct.to(prRef.current,{opacity:1,duration:0.4},0.75);ct.to(lsRef.current,{opacity:1,duration:0.4},0.9)
 
     let loadDone=false,modelReady=false
-    function tryPlay(){if(loadDone&&modelReady&&mTlRef.current)mTlRef.current.play()}
+    function tryPlay(){
+      if(!loadDone||!modelReady||!mTlRef.current)return
+      setProg(100);if(lsRef.current)lsRef.current.textContent='SYSTEM READY'
+      // 额外 1s 让用户看清收尾提示再进入场景
+      gsap.delayedCall(1,()=>mTlRef.current?.play())
+    }
 
     const loader=new GLTFLoader()
     loader.load(MODEL_URL,(gltf)=>{
@@ -143,7 +162,7 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
       },6.0)
       orbitTL.to([ltRef.current,ldRef.current,prRef.current,lsRef.current,document.querySelector('.loading-sub')],{opacity:0,y:-8,duration:0.35,stagger:0.025},6.5)
       mTlRef.current=orbitTL;setProg(100);modelReady=true;tryPlay()
-    },(xhr)=>{if(xhr.total)setProg(Math.round((xhr.loaded/xhr.total)*100))},()=>{})
+    },onProgress,()=>{})
 
     return()=>{
       gsap.ticker.remove(tick);dTlRef.current?.kill();wsTweenRef.current?.kill();mTlRef.current?.kill();ctrl.dispose();re.dispose()
