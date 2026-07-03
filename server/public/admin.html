@@ -37,7 +37,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
 .stat-card .stat-num{font-family:var(--display);font-size:28px;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stat-card .stat-label{font-size:11px;color:var(--ink-mute);margin-top:2px}
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
-.chart-card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px;overflow:hidden}
+.chart-card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px}
 .chart-card h3{font-family:var(--display);font-size:16px;letter-spacing:.04em;margin-bottom:8px;color:var(--ink-mute)}
 .chart-box{height:240px;width:100%;min-height:0}.chart-box-sm{height:160px;width:100%;min-height:0}
 .three-preview{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-bottom:24px;position:relative;height:200px}
@@ -217,7 +217,7 @@ function initCharts(){
       return html;
     }},
     radar:{center:['50%','52%'],radius:'65%',
-      indicator:[{name:'马力',max:1500},{name:'扭矩(Nm)',max:1200},{name:'极速km/h',max:350},{name:'0-100s',max:3.5},{name:'下压力kg',max:500}],
+      indicator:[{name:'马力 (hp)',max:1500},{name:'扭矩(Nm)',max:1200},{name:'极速km/h',max:350},{name:'0-100s',max:3.5},{name:'下压力kg',max:500}],
     axisName:{color:'#9CA0B0',fontSize:11},splitArea:{areaStyle:{color:['rgba(255,188,10,0.04)','rgba(255,188,10,0.10)']}},
     splitLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
     series:[{type:'radar',data:[{value:[1244,1155,301,2.7,450],name:'Venom GT'}],areaStyle:{color:'rgba(255,188,10,0.25)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'},
@@ -305,7 +305,7 @@ function initMockCharts(){
     var sorted=data.slice().sort(function(a,b){return b.hp-a.hp}).slice(0,8);
     var ch=echarts.init(el);ch.setOption({
       tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>马力: '+p[0].value+' hp'}},
-      xAxis:{type:'category',data:sorted.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:15},axisLine:{show:false}},
+      xAxis:{type:'category',data:sorted.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:0},axisLine:{show:false}},
       yAxis:{type:'value',name:'hp',nameTextStyle:{color:'#5C5F6E',fontSize:10},axisLabel:{color:'#5C5F6E',fontSize:9},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
       series:[{type:'bar',data:sorted.map(function(d,i){return{value:d.hp,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:28,
         label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:'{c}'}}],
@@ -318,7 +318,7 @@ function initMockCharts(){
     var sorted2=data.slice().sort(function(a,b){return a.acceleration-b.acceleration}).slice(0,8);
     var ch=echarts.init(el);ch.setOption({
       tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>0-100km/h: '+p[0].value+'s'}},
-      xAxis:{type:'category',data:sorted2.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:15},axisLine:{show:false}},
+      xAxis:{type:'category',data:sorted2.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:0},axisLine:{show:false}},
       yAxis:{type:'value',name:'秒',nameTextStyle:{color:'#5C5F6E',fontSize:10},axisLabel:{color:'#5C5F6E',fontSize:9},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
       series:[{type:'bar',data:sorted2.map(function(d,i){return{value:d.acceleration,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:28,
         label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:function(p){return p.value+'s'}}}],
@@ -371,7 +371,7 @@ function initMockCharts(){
     var sorted3=data.slice().sort(function(a,b){return b.topSpeed-a.topSpeed}).slice(0,8);
     var ch=echarts.init(el);ch.setOption({
       tooltip:{trigger:'axis',formatter:function(p){return p[0].name+'<br/>极速: '+p[0].value+' km/h'}},
-      xAxis:{type:'category',data:sorted3.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:15},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
+      xAxis:{type:'category',data:sorted3.map(function(d){return d.name.split(' ').pop()}),axisLabel:{color:'#9CA0B0',fontSize:10,interval:0,rotate:0},axisLine:{lineStyle:{color:'rgba(240,241,244,0.08)'}}},
       yAxis:{type:'value',name:'km/h',nameTextStyle:{color:'#5C5F6E',fontSize:10},axisLabel:{color:'#5C5F6E',fontSize:9},splitLine:{lineStyle:{color:'rgba(240,241,244,0.06)'}}},
       series:[{type:'bar',data:sorted3.map(function(d,i){return{value:d.topSpeed,itemStyle:{color:['#FFBC0A','#D99A00','#6B7280','#2D3040','#FFBC0A','#D99A00','#6B7280','#2D3040'][i]}}}),barMaxWidth:28,
         label:{show:true,position:'top',color:'#FFBC0A',fontSize:9,formatter:'{c}'}}],
