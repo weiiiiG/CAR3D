@@ -10,6 +10,7 @@
  */
 export type * from './models/View'
 export type * from './models/ViewOverride'
+export type * from './models/DashboardConfig'
 export type * from './models/MockVehicle'
 export type * from './models/User'
 export type * from './commonInputTypes'

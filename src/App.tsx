@@ -176,7 +176,7 @@ function App(){
     <div className="hint">SELECT VIEW · DRAG TO EXPLORE · RESET TO RETURN</div>
     <LoginModal open={loginOpen} loginErr={loginErr}
       onClose={()=>{setLoginOpen(false);setLoginErr('')}}
-      onSuccess={(token)=>window.open('http://localhost:3000/admin?token='+token,'_blank')}
+      onSuccess={(token)=>window.open('/admin.html?token='+token,'_blank')}
       onLoginError={setLoginErr}/>
     <CapturePanel captureKey={captureKey} capturePos={capturePos}
       onSave={()=>{
@@ -184,9 +184,9 @@ function App(){
         if(!cam||!ctrl)return
         localStorage.setItem('admin_capture',JSON.stringify({pos:[cam.position.x,cam.position.y,cam.position.z],target:[ctrl.target.x,ctrl.target.y,ctrl.target.z]}))
         alert('视角已保存！正在返回管理后台...')
-        window.location.href='http://localhost:3000/admin'
+        window.location.href='/admin.html'
       }}
-      onClose={()=>{setCaptureKey(null);window.location.href='http://localhost:3000/admin'}}/>
+      onClose={()=>{setCaptureKey(null);window.location.href='/admin.html'}}/>
     <ViewManagerPanel open={false} overrides={overrides} hi={HI}
       onUpdate={handleUpdateView} onReset={handleResetOverride} onNavigate={hotspotClick} onClose={()=>{}}/>
   </div>)

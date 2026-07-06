@@ -386,6 +386,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   View: 'View',
   ViewOverride: 'ViewOverride',
+  DashboardConfig: 'DashboardConfig',
   MockVehicle: 'MockVehicle',
   User: 'User'
 } as const
@@ -403,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "view" | "viewOverride" | "mockVehicle" | "user"
+    modelProps: "view" | "viewOverride" | "dashboardConfig" | "mockVehicle" | "user"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -552,6 +553,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ViewOverrideCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ViewOverrideCountAggregateOutputType> | number
+        }
+      }
+    }
+    DashboardConfig: {
+      payload: Prisma.$DashboardConfigPayload<ExtArgs>
+      fields: Prisma.DashboardConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DashboardConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DashboardConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.DashboardConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DashboardConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>
+        }
+        findMany: {
+          args: Prisma.DashboardConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>[]
+        }
+        create: {
+          args: Prisma.DashboardConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>
+        }
+        createMany: {
+          args: Prisma.DashboardConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DashboardConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.DashboardConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>
+        }
+        update: {
+          args: Prisma.DashboardConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.DashboardConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DashboardConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DashboardConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.DashboardConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.DashboardConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDashboardConfig>
+        }
+        groupBy: {
+          args: Prisma.DashboardConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DashboardConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DashboardConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DashboardConfigCountAggregateOutputType> | number
         }
       }
     }
@@ -780,6 +855,14 @@ export const ViewOverrideScalarFieldEnum = {
 export type ViewOverrideScalarFieldEnum = (typeof ViewOverrideScalarFieldEnum)[keyof typeof ViewOverrideScalarFieldEnum]
 
 
+export const DashboardConfigScalarFieldEnum = {
+  key: 'key',
+  data: 'data'
+} as const
+
+export type DashboardConfigScalarFieldEnum = (typeof DashboardConfigScalarFieldEnum)[keyof typeof DashboardConfigScalarFieldEnum]
+
+
 export const MockVehicleScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -828,6 +911,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1049,6 +1139,7 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   view?: Prisma.ViewOmit
   viewOverride?: Prisma.ViewOverrideOmit
+  dashboardConfig?: Prisma.DashboardConfigOmit
   mockVehicle?: Prisma.MockVehicleOmit
   user?: Prisma.UserOmit
 }

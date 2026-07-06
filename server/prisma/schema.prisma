@@ -45,6 +45,13 @@ model ViewOverride {
   @@map("view_overrides")
 }
 
+model DashboardConfig {
+  key   String @id @db.VarChar(50)
+  data  Json
+
+  @@map("dashboard_config")
+}
+
 model MockVehicle {
   id              Int      @id @default(autoincrement())
   name            String   @db.VarChar(100)

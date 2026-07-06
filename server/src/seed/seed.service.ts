@@ -144,6 +144,23 @@ export class SeedService implements OnModuleInit {
       ]});
       console.log('[Seed] 3 个初始用户已创建 (密码均为 123456)');
     }
+
+    // 初始化仪表盘配置
+    const dcCount = await this.prisma.dashboardConfig.count();
+    if (dcCount === 0) {
+      console.log('[Seed] 初始化仪表盘数据...');
+      await this.prisma.dashboardConfig.createMany({ data: [
+        { key: 'dimensions', data: { labels: ['车长','车宽','车高','轴距'], values: [4650,1960,1130,2800] }},
+        { key: 'materials', data: { labels: ['碳纤维','Alcantara','皮革','铝合金'], values: [45,30,15,10] }},
+        { key: 'trend', data: { months: ['1月','2月','3月','4月','5月','6月'], series: [
+          { name:'前脸', data:[320,402,480,534,590,650] },
+          { name:'侧颜', data:[220,282,350,410,445,490] },
+          { name:'座舱', data:[150,180,220,260,300,340] },
+          { name:'内饰', data:[80,110,145,180,220,260] },
+        ]}},
+      ]});
+      console.log('[Seed] 仪表盘数据已创建');
+    }
   }
 
   async reSeed() {

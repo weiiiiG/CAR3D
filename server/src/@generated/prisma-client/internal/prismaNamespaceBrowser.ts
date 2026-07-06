@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   View: 'View',
   ViewOverride: 'ViewOverride',
+  DashboardConfig: 'DashboardConfig',
   MockVehicle: 'MockVehicle',
   User: 'User'
 } as const
@@ -111,6 +112,14 @@ export const ViewOverrideScalarFieldEnum = {
 export type ViewOverrideScalarFieldEnum = (typeof ViewOverrideScalarFieldEnum)[keyof typeof ViewOverrideScalarFieldEnum]
 
 
+export const DashboardConfigScalarFieldEnum = {
+  key: 'key',
+  data: 'data'
+} as const
+
+export type DashboardConfigScalarFieldEnum = (typeof DashboardConfigScalarFieldEnum)[keyof typeof DashboardConfigScalarFieldEnum]
+
+
 export const MockVehicleScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -159,6 +168,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

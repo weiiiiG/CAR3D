@@ -50,6 +50,11 @@ export type View = Prisma.ViewModel
  */
 export type ViewOverride = Prisma.ViewOverrideModel
 /**
+ * Model DashboardConfig
+ * 
+ */
+export type DashboardConfig = Prisma.DashboardConfigModel
+/**
  * Model MockVehicle
  * 
  */
