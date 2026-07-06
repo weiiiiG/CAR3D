@@ -186,6 +186,14 @@ html, body, #root {
   transform-origin: left;
   transform: scaleX(0);
 }
+.panel-close {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  appearance: none; border: none; background: transparent;
+  font-size: 20px; line-height: 1; color: var(--ink-soft);
+  cursor: pointer; padding: 2px 6px; border-radius: 3px;
+  transition: color 0.18s, background 0.18s;
+}
+.panel-close:hover { color: var(--ink); background: var(--accent-dim); }
 .panel-inner {
   position: relative;
   padding: clamp(24px, 2.6vw, 32px) clamp(20px, 2.6vw, 28px) clamp(18px, 2.2vw, 24px);

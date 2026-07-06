@@ -501,29 +501,14 @@ function pf(id){return parseFloat(document.getElementById(id).value)}
 // ─── Capture from 3D scene ───
 var capturePoll=null;
 function captureFromScene(key){
-  // 打开 3D 展示页进入捕获模式
-  window.open(window.location.origin+'/?capture='+encodeURIComponent(key),'_blank');
-  toast('请在打开的 3D 场景中调整视角后点击「确认保存」');
-  // 轮询 localStorage 获取捕获结果
+  // 同一窗口跳转到 3D 展示页进入捕获模式
+  var returnUrl=window.location.href;
+  localStorage.setItem('admin_return',returnUrl);
+  location.href='/?capture='+encodeURIComponent(key);
+  toast('请在 3D 场景中调整视角后点击「确认保存」');
+  // 取消旧的 localStorage 轮询
   if(capturePoll)clearInterval(capturePoll);
-  localStorage.removeItem('admin_capture');
-  capturePoll=setInterval(function(){
-    try {
-      var raw=localStorage.getItem('admin_capture');
-      if(!raw)return;
-      var d=JSON.parse(raw);
-      clearInterval(capturePoll);capturePoll=null;
-      localStorage.removeItem('admin_capture');
-      // 填充表单
-      var epx=document.getElementById('epx');if(epx)epx.value=d.pos[0].toFixed(2);
-      var epy=document.getElementById('epy');if(epy)epy.value=d.pos[1].toFixed(2);
-      var epz=document.getElementById('epz');if(epz)epz.value=d.pos[2].toFixed(2);
-      var etx=document.getElementById('etx');if(etx)etx.value=d.target[0].toFixed(2);
-      var ety=document.getElementById('ety');if(ety)ety.value=d.target[1].toFixed(2);
-      var etz=document.getElementById('etz');if(etz)etz.value=d.target[2].toFixed(2);
-      toast('视角坐标已自动填入！');
-    }catch(e){}
-  },500);
+  capturePoll=null;
 }
 
 function reSeed(){

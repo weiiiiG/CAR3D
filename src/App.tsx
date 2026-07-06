@@ -178,7 +178,7 @@ function App(){
       tbRef={tbRef} onHotspotClick={hotspotClick} onResetView={resetView} def={DEF}/>
     <div className="top-bar"><div className="brand">HENNESSY</div><div className="model-tag">VENOM GT · 2010</div></div>
     <LoadingOverlay prog={prog} loRef={loRef} ltRef={ltRef} ldRef={ldRef} prRef={prRef} lsRef={lsRef}/>
-    <AnnotationPanel hot={hot} pnRef={pnRef} chRef={chRef} hi={HI} co={CO}/>
+    <AnnotationPanel hot={hot} pnRef={pnRef} chRef={chRef} hi={HI} co={CO} onClose={resetView}/>
     <HudBar hot={hot} tbRef={tbRef} hi={HI} onHotspotClick={hotspotClick} onReset={resetView} onGearClick={()=>setLoginOpen(true)}/>
     <div className="hint">SELECT VIEW · DRAG TO EXPLORE · RESET TO RETURN</div>
     <LoginModal open={loginOpen} loginErr={loginErr}
@@ -188,10 +188,11 @@ function App(){
     <CapturePanel captureKey={captureKey} capturePos={capturePos}
       onSave={()=>{
         const cam=camRef.current,ctrl=ctrlRef.current
-        if(!cam||!ctrl)return
-        localStorage.setItem('admin_capture',JSON.stringify({pos:[cam.position.x,cam.position.y,cam.position.z],target:[ctrl.target.x,ctrl.target.y,ctrl.target.z]}))
-        alert('视角已保存！正在返回管理后台...')
-        window.location.href='/admin.html'
+        if(!cam||!ctrl||!captureKey)return
+        const p={viewKey:captureKey,posX:cam.position.x,posY:cam.position.y,posZ:cam.position.z,targetX:ctrl.target.x,targetY:ctrl.target.y,targetZ:ctrl.target.z}
+        fetch('/api/overrides/'+captureKey,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)})
+          .then(function(){alert('视角已保存！');window.location.href='/admin.html'})
+          .catch(function(){alert('保存失败，请确认后端已启动')})
       }}
       onClose={()=>{setCaptureKey(null);window.location.href='/admin.html'}}/>
     <ViewManagerPanel open={false} overrides={overrides} hi={HI}
