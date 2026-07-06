@@ -29,11 +29,12 @@ export default function LoginModal({open,loginErr,onClose,onSuccess,onLoginError
           const p=(document.getElementById('loginPass') as HTMLInputElement)?.value
           try{
             const r=await fetch(`${API_BASE}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
-            if(!r.ok){onLoginError('用户名或密码错误');return}
+            if(r.status===401){onLoginError('用户名或密码错误');return}
+            if(!r.ok){onLoginError(`服务器错误 (${r.status})`);return}
             const d=await r.json()
             onClose()
             onSuccess(d.access_token)
-          }catch(e){onLoginError('无法连接后端服务')}
+          }catch(e){onLoginError('无法连接后端服务，请确认后端已启动')}
         }}>进入后台</button>
     </div>
   </div>)

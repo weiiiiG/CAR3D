@@ -570,14 +570,15 @@ function doLogin(){
   var err=document.getElementById('loginError');
   fetch(API+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
   .then(function(r){
-    if(!r.ok){err.style.display='block';err.textContent='用户名或密码错误';return}
+    if(r.status===401){err.style.display='block';err.textContent='用户名或密码错误';return}
+    if(!r.ok){err.style.display='block';err.textContent='服务器错误 ('+r.status+')';return}
     return r.json();
   }).then(function(d){
     if(!d)return;
     adminToken=d.access_token;
     err.style.display='none';
     fetch(API+'/auth/me',{credentials:'include',headers:{'Authorization':'Bearer '+adminToken}}).then(function(r){return r.json()}).then(function(u2){buildSidebar(u2);loadData()});
-  }).catch(function(){err.style.display='block';err.textContent='无法连接后端服务'});
+  }).catch(function(){err.style.display='block';err.textContent='无法连接后端服务，请确认后端已启动'});
 }
 
 // Token refresh: access_token 在内存，refresh_token 在 HttpOnly Cookie
