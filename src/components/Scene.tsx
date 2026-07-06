@@ -160,6 +160,9 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
       orbitTL.to(cam.position,{x:def.pos[0],y:def.pos[1],z:def.pos[2],duration:1.8,ease:'power3.inOut',
         onUpdate:()=>cam.lookAt(ctrl.target)
       },6.0)
+      orbitTL.to(ctrl.target,{x:def.target[0],y:def.target[1],z:def.target[2],duration:1.8,ease:'power3.inOut',
+        onUpdate:()=>ctrl.update()
+      },6.0)
       orbitTL.to([ltRef.current,ldRef.current,prRef.current,lsRef.current,document.querySelector('.loading-sub')],{opacity:0,y:-8,duration:0.35,stagger:0.025},6.5)
       mTlRef.current=orbitTL;setProg(100);modelReady=true;tryPlay()
     },onProgress,()=>{})
