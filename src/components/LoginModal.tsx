@@ -6,7 +6,7 @@ interface LoginModalProps{
   onLoginError:(msg:string)=>void
 }
 
-const API_BASE='http://localhost:3000/api'
+const API_BASE='/api'
 
 export default function LoginModal({open,loginErr,onClose,onSuccess,onLoginError}:LoginModalProps){
   if(!open)return null
@@ -31,7 +31,6 @@ export default function LoginModal({open,loginErr,onClose,onSuccess,onLoginError
             const r=await fetch(`${API_BASE}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
             if(!r.ok){onLoginError('用户名或密码错误');return}
             const d=await r.json()
-            localStorage.setItem('admin_token',d.access_token)
             onClose()
             onSuccess(d.access_token)
           }catch(e){onLoginError('无法连接后端服务')}

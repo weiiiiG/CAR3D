@@ -38,7 +38,7 @@ interface SceneProps {
 }
 
 export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRef,lsRef,tbRef,onHotspotClick,onResetView,def}:SceneProps){
-  const {camRef,ctrlRef,drRef,wrRef,dTlRef,wsTweenRef,mTlRef,hitRef,allViews,wsDataRef}=sceneRefs
+  const {camRef,ctrlRef,drRef,wrRef,dTlRef,wsTweenRef,mTlRef,hitRef,wsDataRef}=sceneRefs
   const cvsRef=useRef<HTMLDivElement>(null)
 
   useEffect(()=>{
@@ -125,7 +125,7 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
       const dd:{node:THREE.Object3D;bq:THREE.Quaternion;sign:number}[]=[];if(lf)dd.push({node:lf,bq:lf.quaternion.clone(),sign:-1});if(rf)dd.push({node:rf,bq:rf.quaternion.clone(),sign:1});drRef.current=dd
       const wl:{node:THREE.Object3D;bq:THREE.Quaternion}[]=[];for(const n of WHEEL_NODES){const n2=m.getObjectByName(n);if(n2)wl.push({node:n2,bq:n2.quaternion.clone()})};wrRef.current=wl
       const ds={lf:0,rf:0},tq=new THREE.Quaternion()
-      dTlRef.current=gsap.timeline({paused:true,onUpdate:()=>{if(lf){tq.setFromAxisAngle(Y_AXIS,ds.lf*-1);lf.quaternion.copy(dd[0]!.bq).multiply(tq)};if(rf){tq.setFromAxisAngle(Y_AXIS,ds.rf*1);rf.quaternion.copy(dd[1]!.bq).multiply(tq)}}})
+      dTlRef.current=gsap.timeline({paused:true,onUpdate:()=>{if(lf&&dd.length>0){tq.setFromAxisAngle(Y_AXIS,ds.lf*-1);lf.quaternion.copy(dd[0]!.bq).multiply(tq)};if(rf&&dd.length>1){tq.setFromAxisAngle(Y_AXIS,ds.rf*1);rf.quaternion.copy(dd[1]!.bq).multiply(tq)}}})
       dTlRef.current.to(ds,{lf:DOOR_OPEN_ANGLE,duration:1.5,ease:'back.out(1.3)'},0).to(ds,{rf:DOOR_OPEN_ANGLE,duration:1.5,ease:'back.out(1.3)'},0.12)
       const bcc=b.getCenter(new THREE.Vector3()),fwd=b.max.z,sx=b.max.x
       const pm2:Record<string,[number,number,number]>={front:[0,bcc.y,fwd-0.3],side:[sx,bcc.y,0],'45':[sx*0.4,bcc.y,fwd*0.3],interior:[-0.3,bcc.y-0.05,-0.3],doors:[sx*0.6,bcc.y+0.3,fwd*0.1],wheels:[sx,bcc.y-0.1,fwd*0.25]}

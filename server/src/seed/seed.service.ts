@@ -172,6 +172,26 @@ export class SeedService implements OnModuleInit {
     await this.prisma.mockVehicle.deleteMany();
     await this.prisma.mockVehicle.createMany({ data: MOCK_VEHICLE_DATA });
 
-    return { message: `重新导入 ${SEED_DATA.length} 个视角、${MOCK_VEHICLE_DATA.length} 辆模拟车辆` };
+    await this.prisma.user.deleteMany();
+    const hash = await bcrypt.hash('123456', 10);
+    await this.prisma.user.createMany({ data: [
+      { username: 'admin', password: hash, role: 'super_admin' },
+      { username: 'editor', password: hash, role: 'admin' },
+      { username: 'viewer', password: hash, role: 'user' },
+    ]});
+
+    await this.prisma.dashboardConfig.deleteMany();
+    await this.prisma.dashboardConfig.createMany({ data: [
+      { key: 'dimensions', data: { labels: ['车长','车宽','车高','轴距'], values: [4650,1960,1130,2800] }},
+      { key: 'materials', data: { labels: ['碳纤维','Alcantara','皮革','铝合金'], values: [45,30,15,10] }},
+      { key: 'trend', data: { months: ['1月','2月','3月','4月','5月','6月'], series: [
+        { name:'前脸', data:[320,402,480,534,590,650] },
+        { name:'侧颜', data:[220,282,350,410,445,490] },
+        { name:'座舱', data:[150,180,220,260,300,340] },
+        { name:'内饰', data:[80,110,145,180,220,260] },
+      ]}},
+    ]});
+
+    return { message: `重新导入 6 个视角、12 辆模拟车辆、3 个用户、3 个仪表盘配置` };
   }
 }
