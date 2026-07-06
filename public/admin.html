@@ -118,7 +118,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
   </div>
 </div>
 <!-- ===== Dashboard ===== -->
-<div class="page active" id="page-dashboard">
+<div class="page" id="page-dashboard">
   <h1>仪表盘</h1>
   <div class="subtitle">Hennessy Venom GT · 数据管理后台</div>
   <div class="stats-row">
@@ -689,9 +689,8 @@ function loadData(){
 // ─── Boot ───
 window.onload=function(){
   adminToken='';
-  showLogin();
   initCharts();
-  // 尝试用 refresh cookie 静默恢复登录
+  // 先尝试静默恢复会话，避免登录页闪烁
   fetch(API+'/auth/refresh',{method:'POST',credentials:'include'}).then(function(r){
     if(!r.ok){showLogin();return}
     return r.json();
