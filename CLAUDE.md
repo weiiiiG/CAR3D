@@ -140,5 +140,28 @@ npm run start:dev
 feat: 新功能 / fix: 修复 / docs: 文档更新 / chore: 构建/工具 / refactor: 重构
 ```
 
+## 环境变量
+| 文件 | 变量 | 说明 | 默认值 |
+|---|---|---|---|
+| server/.env | `DATABASE_URL` | PostgreSQL 连接字符串 | `postgresql://postgres:123456@localhost:5432/car3d_admin` |
+| server/.env | `JWT_SECRET` | JWT 签名密钥 | `car3d_jwt_secret_2026` |
+
+`.env` 由 `server/src/main.ts` 中 `import 'dotenv/config'` 自动加载。
+
+## 踩坑记录
+
+### 前端
+1. **API_BASE 必须用相对路径**：`const API_BASE = '/api'` 而非 `http://localhost:3000/api`，否则绕过 Vite 代理导致 CORS 和 Cookie 问题（`SameSite=Strict` 跨端口失效）。
+2. **LoginModal 不能存 token 到 localStorage**：违反安全设计，access_token 应仅在内存中。管理后台靠 refresh_token cookie 自行换取新 token。
+3. **ECharts 配置拒绝函数**：doors 柱状图的 `itemStyle.color` 回调函数无法序列化存入数据库 JSONB，改用 `data: [{value, itemStyle:{color}}]` 每项独立颜色。
+4. **Scene 车门节点空安全**：如果 glTF 模型缺少 `door_lf_ok_0`/`door_rf_ok_1`，`dd[0]!.bq` 会崩溃。需加 `dd.length > 0` 守卫。
+5. **CSS 变量不要重复声明**：`--accent-dim` 被声明了两次，后值覆盖前值，可能造成阅读困惑。
+
+### 后端
+1. **PrismaService 硬编码数据库密码**：忽略 `.env` 的 `DATABASE_URL`。修复：`new pg.Pool({ connectionString: process.env.DATABASE_URL })`。
+2. **JWT 密钥硬编码**：`auth.module.ts` 和 `jwt.strategy.ts` 中 `secret` 应通过 `process.env.JWT_SECRET` 读取。
+3. **reSeed 不完整**：只重置 views + mock_vehicles，漏掉 users 和 dashboard_config。
+4. **管理后台登录页闪烁**：`window.onload` 先 `showLogin()` 再 refresh。修复：先 refresh，成功则 `buildSidebar()`，失败才 `showLogin()`。
+
 @see docs/frontend/CLAUDE.md
 @see docs/backend/CLAUDE.md

@@ -43,11 +43,15 @@ feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 
 ```
 
 ## 认证规范
-- JWT access_token 存在内存变量（`adminToken`），不持久化到 localStorage
+- JWT access_token 存在内存变量（`adminToken`），**不持久化到 localStorage**
 - refresh_token 由后端 HttpOnly Cookie 管理，前端不可读
 - 所有 API 通过 `fetchAuth()` 调用，自动处理 401 → refresh → 重试
-- 页面启动时尝试 `/api/auth/refresh` 静默恢复会话
+- 管理后台启动时先尝试 `/api/auth/refresh` 静默恢复会话，成功则直接进入仪表盘，失败才显示登录页
 - API 使用相对路径 `/api`（非 `http://localhost:3000/api`），确保 Cookie 同域名生效
+
+## API 路径规范
+- 所有前端组件使用**相对路径** `const API_BASE = '/api'`，通过 Vite 代理转发到 `localhost:3000`（而非硬编码 `http://localhost:3000/api`）
+- 这确保 HttpOnly Cookie 在 same-site 下正确发送，避免 CORS 和端口不一致问题
 
 ## 踩坑记录
 
@@ -63,3 +67,6 @@ feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 
 6. **RGBELoader 已废弃**：Three.js 0.184 中 `RGBELoader` 替换为 `HDRLoader`。旧用法需 PMREMGenerator 处理，新用法直接 `HDRLoader.load()` 返回的 texture 设置 `mapping = EquirectangularReflectionMapping` 即可作为 `scene.environment`。
 7. **`switchPage` 与内联 `display:none` 冲突**：`showLogin()` 用 `p.style.display='none'` 隐藏页面，但 `switchPage` 之前只操作 CSS class，class 无法覆盖内联样式。修复：`switchPage` 中改用 `p.style.display='block'|'none'` 控制。
 8. **`window.open` vs `location.href`**：导航必须在同一标签页时不要用 `window.open(url,'_blank')`，改用 `location.href=url`。特别是「返回 3D 展示」和管理后台入口按钮。
+9. **LoginModal 不能存储 token 到 localStorage**：违反安全设计，access_token 应仅在内存变量中传递。登录成功后由管理后台的 refresh_token cookie 自行换取新 token。
+10. **ECharts 配置中不能使用函数回调**：doors 柱状图曾用 `itemStyle:{color:(p)=>[...][p.dataIndex]}` 函数回调，但 chartConfig 会存入数据库 JSONB 列，函数无法序列化。改用 `data: [{value, itemStyle:{color}}]` 每项独立颜色。
+11. **管理后台登录页闪烁**：`window.onload` 先调 `showLogin()` 再发 refresh 请求，导致已登录用户看到登录页闪一下。修复：先尝试 refresh（页面保持空白），失败才显示登录页。

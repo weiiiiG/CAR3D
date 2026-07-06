@@ -6,11 +6,22 @@ NestJS 11 + Prisma 7 + PostgreSQL 18 + pg
 ## 启动
 ```bash
 cd server
-npm run start:dev    # 开发模式
+npm run start:dev    # 开发模式（自动加载 .env）
 # 管理后台: http://localhost:5180/admin（通过 Vite 代理）
 # 直接 API: http://localhost:3000/api
 默认用户: admin / super_admin / 密码 123456
 ```
+
+## 环境变量
+项目依赖 `.env` 文件中的环境变量：
+
+| 变量 | 说明 | 默认值 |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL 连接字符串 | `postgresql://postgres:123456@localhost:5432/car3d_admin` |
+| `JWT_SECRET` | JWT 签名密钥 | `car3d_jwt_secret_2026` |
+
+`.env` 文件在 `server/.env`，由 `server/src/main.ts` 中 `import 'dotenv/config'` 自动加载。
+Prisma CLI 使用 `schema.prisma` 的 datasource 配置指向同一数据库。
 
 ## 模块规范
 - 每个功能模块一个目录：`auth/`, `users/`, `dashboard/`, `views/`, `mock-vehicles/`, `seed/`
@@ -34,3 +45,7 @@ npm run start:dev    # 开发模式
 7. **Prisma Client 生成路径**：必须在 `src/` 目录内，否则 NestJS 不编译到 dist
 8. **JWT Refresh Token**：access_token 15min 放前端内存，refresh_token 7 天放 HttpOnly Cookie。`/api/auth/refresh` 用 Cookie 自动续期
 9. **CORS 与 Cookie**：`credentials: true` 必须同时在后端 `enableCors` 和前端 `fetch` 中设置，否则 HttpOnly Cookie 不会被浏览器发送
+10. **PrismaService 硬编码数据库密码**：原代码在 `prisma.service.ts` 中硬编码 `host/port/user/password`，忽略 `.env` 的 `DATABASE_URL`。修复：使用 `new pg.Pool({ connectionString: process.env.DATABASE_URL })`，并在 `main.ts` 添加 `import 'dotenv/config'`。
+11. **JWT 密钥硬编码**：`auth.module.ts` 和 `jwt.strategy.ts` 中 `secret` 硬编码字符串。修复：改用 `process.env.JWT_SECRET || 'fallback'`。
+12. **reSeed 不完整**：`seed.service.ts` 的 `reSeed()` 只重置 views + mock_vehicles，漏掉了 users 和 dashboard_config。修复：reSeed 中 deleteMany + createMany 覆盖全部 5 张表。
+13. **管理后台登录页闪烁**：`window.onload` 先 `showLogin()` 再 refresh，已登录用户看到登录页闪一下。修复：先 `fetch('/api/auth/refresh')`，成功则 `buildSidebar()`，失败才 `showLogin()`。
