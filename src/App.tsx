@@ -38,6 +38,7 @@ function App(){
   const [loginOpen,setLoginOpen]=useState(false)
   const [loginErr,setLoginErr]=useState(''),[captureKey,setCaptureKey]=useState<string|null>(null)
   const [capturePos,setCapturePos]=useState('')
+  const [hudVisible,setHudVisible]=useState(false)
   const drRef=useRef<{node:THREE.Object3D;bq:THREE.Quaternion;sign:number}[]>([]),wrRef=useRef<{node:THREE.Object3D;bq:THREE.Quaternion}[]>([]),wsDataRef=useRef({speed:0})
   const camRef=useRef<THREE.PerspectiveCamera|null>(null),ctrlRef=useRef<OrbitControls|null>(null)
   const hitRef=useRef<THREE.Mesh[]>([])
@@ -66,6 +67,12 @@ function App(){
   useEffect(()=>{
     allViews.current={...BUILTIN_VIEWS,...overrides}
   },[overrides])
+
+  // hudVisible → 动画弹出 HUD 栏
+  useEffect(()=>{
+    if(!hudVisible||!tbRef.current)return
+    gsap.fromTo(tbRef.current,{opacity:0,y:18},{opacity:1,y:0,duration:0.5,ease:'power3.out'})
+  },[hudVisible])
 
   // 捕获模式：从管理后台打开 ?capture=1 进入视角选取
   useEffect(()=>{
@@ -173,14 +180,14 @@ function App(){
   },[hot])
 
   return(<div className="viewer" ref={ref}>
-    <Scene scopeRef={ref} sceneRefs={sceneRefs} setProg={setProg}
+    <Scene scopeRef={ref} sceneRefs={sceneRefs} setProg={setProg} onReveal={()=>setHudVisible(true)}
       loRef={loRef} ltRef={ltRef} ldRef={ldRef} prRef={prRef} lsRef={lsRef}
-      tbRef={tbRef} onHotspotClick={hotspotClick} onResetView={resetView} def={DEF}/>
+onHotspotClick={hotspotClick} onResetView={resetView} def={DEF}/>
     <div className="top-bar"><div className="brand">HENNESSY</div><div className="model-tag">VENOM GT · 2010</div></div>
     <LoadingOverlay prog={prog} loRef={loRef} ltRef={ltRef} ldRef={ldRef} prRef={prRef} lsRef={lsRef}/>
     <AnnotationPanel hot={hot} pnRef={pnRef} chRef={chRef} hi={HI} co={CO} onClose={resetView}/>
     <HudBar hot={hot} tbRef={tbRef} hi={HI} onHotspotClick={hotspotClick} onReset={resetView} onGearClick={()=>setLoginOpen(true)}/>
-    <div className="hint">SELECT VIEW · DRAG TO EXPLORE · RESET TO RETURN</div>
+    <div className="hint">{hudVisible?'SELECT VIEW · DRAG TO EXPLORE · RESET TO RETURN':'CLICK ANYWHERE TO START'}</div>
     <LoginModal open={loginOpen} loginErr={loginErr}
       onClose={()=>{setLoginOpen(false);setLoginErr('')}}
       onSuccess={()=>window.location.href='/admin.html'}

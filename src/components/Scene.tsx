@@ -31,13 +31,13 @@ interface SceneProps {
   ldRef: React.RefObject<HTMLDivElement | null>
   prRef: React.RefObject<HTMLDivElement | null>
   lsRef: React.RefObject<HTMLDivElement | null>
-  tbRef: React.RefObject<HTMLDivElement | null>
   onHotspotClick: (key: string) => void
   onResetView: () => void
+  onReveal: () => void
   def: {pos:number[];target:number[]}
 }
 
-export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRef,lsRef,tbRef,onHotspotClick,onResetView,def}:SceneProps){
+export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRef,lsRef,onHotspotClick,onResetView,onReveal,def}:SceneProps){
   const {camRef,ctrlRef,drRef,wrRef,dTlRef,wsTweenRef,mTlRef,hitRef,wsDataRef}=sceneRefs
   const cvsRef=useRef<HTMLDivElement>(null)
 
@@ -87,6 +87,9 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
       ctrl.update();re.render(sc,cam)
     };gsap.ticker.add(tick)
     window.addEventListener('resize',()=>{const w=h.clientWidth,wh=h.clientHeight;cam.aspect=w/wh;cam.updateProjectionMatrix();re.setSize(w,wh)})
+    // first click reveals UI
+    const revealFn=()=>{onReveal();re.domElement.removeEventListener('pointerdown',revealFn)}
+    re.domElement.addEventListener('pointerdown',revealFn)
     const ct=gsap.timeline({onComplete:()=>{loadDone=true;tryPlay()}})
     // 步骤文字随加载进度变化
     function updateLabel(p:number){
@@ -136,7 +139,6 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
       const orbitTL=gsap.timeline({paused:true,onStart:()=>{
         const rTip=gsap.timeline({defaults:{ease:'power3.out'}})
         rTip.set(loRef.current,{display:'none'})
-        rTip.fromTo(tbRef.current,{xPercent:-50,y:18,opacity:0},{xPercent:-50,y:0,opacity:1,duration:0.45,ease:'power3.out'})
         rTip.to('.hint',{opacity:1,duration:0.4},0.2)
       },onComplete:()=>{
         ctrl.enabled=true
