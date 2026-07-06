@@ -91,21 +91,29 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
 
 <div class="sidebar">
   <div class="sidebar-brand">CAR<span>3D</span></div>
-  <div class="sidebar-nav">
-    <a onclick="switchPage('dashboard')" data-page="dashboard" class="active">仪表盘</a>
-    <a onclick="switchPage('views')" data-page="views">视角管理</a>
-    <a onclick="switchPage('data')" data-page="data">数据概览</a>
-    <a onclick="switchPage('users')" data-page="users" style="color:var(--accent)">用户管理</a>
-    <a onclick="switchPage('settings')" data-page="settings">设置</a>
-  </div>
+  <div class="sidebar-nav" id="sidebarNav"></div>
   <div style="flex:1;min-height:4px"></div>
-  <a class="sidebar-3d" onclick="window.open('http://localhost:5180','_blank')">返回 3D 展示</a>
-  <div class="sidebar-status">
-    <span class="dot"></span> 后端运行中 <span style="margin-left:auto;font-size:10px">v1.0</span>
+  <div class="sidebar-status" id="sidebarStatus">
+    <span class="dot"></span> <span id="userLabel">未登录</span> <span style="margin-left:auto;font-size:10px" id="roleLabel">—</span>
   </div>
+  <a class="sidebar-3d" onclick="window.open('http://localhost:5180','_blank')" style="margin-top:6px">返回 3D 展示</a>
+  <a class="sidebar-3d" id="logoutBtn" style="background:rgba(239,68,68,0.12);color:#EF4444;margin-top:4px" onclick="logout()">退出登录</a>
 </div>
 
 <div class="main">
+<!-- ===== Login Page ===== -->
+<div class="page" id="page-login" style="display:none;align-items:center;justify-content:center;height:100%">
+  <div style="width:320px;text-align:center">
+    <div style="font-family:var(--display);font-size:32px;letter-spacing:.06em;color:var(--ink);margin-bottom:4px">CAR<span style="color:var(--accent)">3D</span></div>
+    <div style="font-size:12px;color:var(--ink-mute);margin-bottom:24px">管理后台 · 请登录</div>
+    <div style="display:flex;flex-direction:column;gap:12px;text-align:left">
+      <input class="mgmt-input" id="loginUser" placeholder="用户名" style="width:100%"/>
+      <input class="mgmt-input" id="loginPass" type="password" placeholder="密码" style="width:100%"/>
+      <div id="loginError" style="font-size:11px;color:#EF4444;text-align:center;display:none"></div>
+      <button class="mgmt-save-btn" style="width:100%;padding:10px 0;font-size:13px" onclick="doLogin()">登录</button>
+    </div>
+  </div>
+</div>
 <!-- ===== Dashboard ===== -->
 <div class="page active" id="page-dashboard">
   <h1>仪表盘</h1>
@@ -201,7 +209,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
 // Global admin script (NOT module — plain script so onclick= and echarts work)
 // ============================================================================
 var API='http://localhost:3000/api';
-var viewsData=[], overridesData=[];
+var viewsData=[], overridesData=[], adminToken='';
 
 function toast(msg){
   var t=document.getElementById('toastBox');
@@ -515,15 +523,65 @@ function reSeed(){
   fetch(API+'/seed',{method:'POST',headers:authHeader()}).then(function(){toast('数据已重置');loadData()}).catch(function(){toast('重置失败')});
 }
 
-// ─── Token / Auth ───
-var adminToken='';
-function authHeader(){
-  var t=adminToken||localStorage.getItem('admin_token')||'';
-  return t?{'Content-Type':'application/json','Authorization':'Bearer '+t}:{'Content-Type':'application/json'};
+// ─── Auth / Role ───
+var currentUser=null;
+var ROLE_MENU={
+  super_admin:[{id:'dashboard',label:'仪表盘'},{id:'views',label:'视角管理'},{id:'data',label:'数据概览'},{id:'users',label:'用户管理'},{id:'settings',label:'设置'}],
+  admin:[{id:'dashboard',label:'仪表盘'},{id:'views',label:'视角管理'},{id:'data',label:'数据概览'},{id:'settings',label:'设置'}],
+  user:[{id:'dashboard',label:'仪表盘'},{id:'data',label:'数据概览'}],
+};
+
+function buildSidebar(user){
+  currentUser=user;
+  var menu=ROLE_MENU[user.role]||ROLE_MENU.user;
+  var nav=document.getElementById('sidebarNav');nav.innerHTML='';
+  menu.forEach(function(item,i){
+    var a=document.createElement('a');
+    a.onclick=function(){switchPage(item.id)};a.setAttribute('data-page',item.id);
+    if(i===0)a.className='active';a.textContent=item.label;nav.appendChild(a);
+  });
+  document.getElementById('userLabel').textContent=user.username;
+  document.getElementById('roleLabel').textContent=
+    user.role==='super_admin'?'超级管理员':user.role==='admin'?'管理员':'普通用户';
+  document.getElementById('page-login').style.display='none';
+  document.querySelector('.sidebar').style.display='flex';
+  document.querySelector('.main').style.display='block';
+  switchPage('dashboard');
 }
+
+function showLogin(){
+  document.getElementById('page-login').style.display='flex';
+  document.querySelector('.sidebar').style.display='none';
+  document.querySelector('.main').style.display='block';
+  document.querySelectorAll('.page').forEach(function(p){if(p.id!=='page-login')p.style.display='none'});
+}
+
+function doLogin(){
+  var u=document.getElementById('loginUser').value;
+  var p=document.getElementById('loginPass').value;
+  var err=document.getElementById('loginError');
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+  .then(function(r){
+    if(!r.ok){err.style.display='block';err.textContent='用户名或密码错误';return}
+    return r.json();
+  }).then(function(d){
+    if(!d)return;
+    adminToken=d.access_token;localStorage.setItem('admin_token',adminToken);
+    err.style.display='none';
+    // 获取用户信息
+    fetch(API+'/auth/me',{headers:aH()}).then(function(r){return r.json()}).then(function(u2){buildSidebar(u2);loadData()});
+  }).catch(function(){err.style.display='block';err.textContent='无法连接后端服务'});
+}
+
+function aH(){var t=adminToken||localStorage.getItem('admin_token')||'';return t?{'Authorization':'Bearer '+t}:{}}
+function authHeader(){var h=aH();h['Content-Type']='application/json';return h;}
 function fetchAuth(url,opt){
-  opt=opt||{};opt.headers=authHeader();opt.headers['Content-Type']='application/json';
-  return fetch(url,opt);
+  opt=opt||{};opt.headers=authHeader();return fetch(url,opt);
+}
+
+function logout(){
+  adminToken='';localStorage.removeItem('admin_token');currentUser=null;
+  document.getElementById('loginUser').value='admin';document.getElementById('loginPass').value='';showLogin();
 }
 
 // ─── Users CRUD ───
@@ -532,15 +590,26 @@ function renderUsersTable(){
   var h=document.getElementById('usersBody');
   if(!usersData.length){h.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-soft)">加载中...</td></tr>';return}
   h.innerHTML=usersData.map(function(u){
-    return '<tr><td class="key-cell">'+u.id+'</td><td style="color:var(--ink);font-weight:600">'+u.username+'</td>'+
-      '<td><span class="badge">'+u.role+'</span></td>'+
+    return '<tr><td class="key-cell">'+u.id+'</td>'+
+      '<td style="color:var(--ink);font-weight:600">'+(currentUser&&currentUser.role==='super_admin'
+        ?'<input id="uname_'+u.id+'" value="'+u.username+'" style="background:var(--bg);border:1px solid var(--rule);border-radius:3px;padding:3px 6px;font-size:12px;color:var(--ink);width:120px"/>'
+        :u.username)+'</td>'+
+      '<td>'+(currentUser&&currentUser.role==='super_admin'
+        ?'<select id="urole_'+u.id+'" style="background:var(--bg);border:1px solid var(--rule);border-radius:3px;padding:3px 4px;font-size:11px;color:var(--ink)">'+
+          '<option value="super_admin" '+(u.role==='super_admin'?'selected':'')+'>超级管理员</option>'+
+          '<option value="admin" '+(u.role==='admin'?'selected':'')+'>管理员</option>'+
+          '<option value="user" '+(u.role==='user'?'selected':'')+'>普通用户</option></select>'
+        :(u.role==='super_admin'?'超级管理员':u.role==='admin'?'管理员':'普通用户'))+'</td>'+
       '<td>'+u.createdAt+'</td>'+
-      '<td>'+(u.username!=='admin'?'<button class="btn danger" onclick="deleteUser('+u.id+')">删除</button>':'<span style="color:var(--ink-soft);font-size:11px">—</span>')+'</td></tr>';
+      '<td>'+(currentUser&&currentUser.role==='super_admin'
+        ?'<button class="btn primary" onclick="updateUser('+u.id+')" style="font-size:10px;padding:2px 8px">保存</button> '+
+          (u.username!=='admin'?'<button class="btn danger" onclick="deleteUser('+u.id+')" style="font-size:10px;padding:2px 8px">删除</button>':'')
+        :(u.username!=='admin'?'<button class="btn danger" onclick="deleteUser('+u.id+')" style="font-size:10px;padding:2px 8px">删除</button>':'<span style="color:var(--ink-soft);font-size:11px">—</span>'))+'</td></tr>';
   }).join('');
 }
 function loadUsers(){
   fetchAuth(API+'/users').then(function(r){
-    if(r.status===401){document.getElementById('usersBody').innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-soft)">请先登录 (返回 3D 展示页重新进入)</td></tr>';return}
+    if(r.status===401){document.getElementById('usersBody').innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-soft)">无权限</td></tr>';return}
     return r.json();
   }).then(function(d){if(d){usersData=d;renderUsersTable()}}).catch(function(){});
 }
@@ -548,18 +617,25 @@ function openAddUser(){
   var m=document.getElementById('modalBox');m.style.display='block';
   m.innerHTML='<div class="modal-mask" onclick="closeModal()"><div class="modal-panel" onclick="event.stopPropagation()">'+
     '<h2>新增用户</h2><div class="form-grid">'+
-    '<div class="form-group full"><label>用户名</label><input id="nuName" placeholder="如: editor"/></div>'+
+    '<div class="form-group full"><label>用户名</label><input id="nuName" placeholder="用户名"/></div>'+
     '<div class="form-group full"><label>密码</label><input id="nuPass" type="password" placeholder="初始密码"/></div>'+
+    '<div class="form-group full"><label>角色</label><select id="nuRole"><option value="user">普通用户</option><option value="admin">管理员</option><option value="super_admin">超级管理员</option></select></div>'+
     '</div><div class="modal-actions">'+
     '<button class="btn" onclick="closeModal()">取消</button>'+
     '<button class="btn primary" onclick="saveUser()">创建</button></div></div></div>';
 }
 function saveUser(){
-  var name=document.getElementById('nuName').value;var pass=document.getElementById('nuPass').value;
+  var name=document.getElementById('nuName').value;var pass=document.getElementById('nuPass').value;var role=document.getElementById('nuRole').value;
   if(!name||!pass){toast('请填写用户名和密码');return}
-  fetchAuth(API+'/users',{method:'POST',body:JSON.stringify({username:name,password:pass})})
+  fetchAuth(API+'/users',{method:'POST',body:JSON.stringify({username:name,password:pass,role:role})})
   .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.message)});closeModal();toast('用户已创建');loadUsers()})
   .catch(function(e){toast(e.message||'创建失败')});
+}
+function updateUser(id){
+  var name=document.getElementById('uname_'+id).value;
+  var role=document.getElementById('urole_'+id).value;
+  fetchAuth(API+'/users/'+id,{method:'PATCH',body:JSON.stringify({username:name,role:role})})
+  .then(function(){toast('已更新');loadUsers()}).catch(function(){toast('更新失败')});
 }
 function deleteUser(id){
   if(!confirm('确定删除此用户吗？'))return;
@@ -586,12 +662,20 @@ function loadData(){
 
 // ─── Boot ───
 window.onload=function(){
-  // 从 URL 参数或 localStorage 读取 token
   var params=new URLSearchParams(window.location.search);
   adminToken=params.get('token')||localStorage.getItem('admin_token')||'';
   if(adminToken)localStorage.setItem('admin_token',adminToken);
+  // 先隐藏所有页面，初始化图表
+  showLogin();
   initCharts();
-  loadData();
+  if(adminToken){
+    fetch(API+'/auth/me',{headers:aH()}).then(function(r){
+      if(!r.ok){showLogin();return}
+      return r.json();
+    }).then(function(u){
+      if(u){buildSidebar(u);loadData()}
+    }).catch(function(){showLogin()});
+  }
 };
 </script>
 </body>

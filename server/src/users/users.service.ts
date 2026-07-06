@@ -33,4 +33,14 @@ export class UsersService {
     await this.findOne(id);
     await this.prisma.user.delete({ where: { id } });
   }
+
+  async update(id: number, dto: { username?: string; role?: string }) {
+    const user = await this.findOne(id);
+    const data: any = {};
+    if (dto.username) data.username = dto.username;
+    if (dto.role) data.role = dto.role;
+    const updated = await this.prisma.user.update({ where: { id }, data });
+    const { password, ...result } = updated;
+    return result;
+  }
 }

@@ -132,13 +132,17 @@ export class SeedService implements OnModuleInit {
       console.log(`[Seed] mock_vehicles 表已有 ${mvCount} 条数据，跳过 seed`);
     }
 
-    // 初始化管理员用户
+    // 初始化用户
     const userCount = await this.prisma.user.count();
     if (userCount === 0) {
-      console.log('[Seed] 创建管理员用户...');
+      console.log('[Seed] 创建初始用户...');
       const hash = await bcrypt.hash('123456', 10);
-      await this.prisma.user.create({ data: { username: 'admin', password: hash, role: 'admin' } });
-      console.log('[Seed] 管理员用户已创建 (admin/123456)');
+      await this.prisma.user.createMany({ data: [
+        { username: 'admin', password: hash, role: 'super_admin' },
+        { username: 'editor', password: hash, role: 'admin' },
+        { username: 'viewer', password: hash, role: 'user' },
+      ]});
+      console.log('[Seed] 3 个初始用户已创建 (密码均为 123456)');
     }
   }
 
