@@ -1,7 +1,7 @@
 interface AnnotationPanelProps{
   hot:string|null
-  pnRef:React.RefObject<HTMLDivElement>
-  chRef:React.RefObject<HTMLDivElement>
+  pnRef:React.RefObject<HTMLDivElement | null>
+  chRef:React.RefObject<HTMLDivElement | null>
   hi:Record<string,{label:string;desc:string;spec:string}>
   co:Record<string,any>
 }

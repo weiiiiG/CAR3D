@@ -2,11 +2,11 @@ const LOADING_TITLE='HENNESSY VENOM GT'
 
 interface LoadingOverlayProps{
   prog:number
-  loRef:React.RefObject<HTMLDivElement>
-  ltRef:React.RefObject<HTMLHeadingElement>
-  ldRef:React.RefObject<HTMLDivElement>
-  prRef:React.RefObject<HTMLDivElement>
-  lsRef:React.RefObject<HTMLDivElement>
+  loRef:React.RefObject<HTMLDivElement | null>
+  ltRef:React.RefObject<HTMLHeadingElement | null>
+  ldRef:React.RefObject<HTMLDivElement | null>
+  prRef:React.RefObject<HTMLDivElement | null>
+  lsRef:React.RefObject<HTMLDivElement | null>
 }
 
 export default function LoadingOverlay({prog,loRef,ltRef,ldRef,prRef,lsRef}:LoadingOverlayProps){

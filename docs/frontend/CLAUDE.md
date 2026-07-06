@@ -70,3 +70,4 @@ feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 
 9. **LoginModal 不能存储 token 到 localStorage**：违反安全设计，access_token 应仅在内存变量中传递。登录成功后由管理后台的 refresh_token cookie 自行换取新 token。
 10. **ECharts 配置中不能使用函数回调**：doors 柱状图曾用 `itemStyle:{color:(p)=>[...][p.dataIndex]}` 函数回调，但 chartConfig 会存入数据库 JSONB 列，函数无法序列化。改用 `data: [{value, itemStyle:{color}}]` 每项独立颜色。
 11. **管理后台登录页闪烁**：`window.onload` 先调 `showLogin()` 再发 refresh 请求，导致已登录用户看到登录页闪一下。修复：先尝试 refresh（页面保持空白），失败才显示登录页。
+12. **React 19 RefObject 类型兼容**：`useRef<HTMLDivElement>(null)` 返回 `RefObject<HTMLDivElement | null>`，组件接口声明 `RefObject<HTMLDivElement>` 会触发 TS2322 错误。所有接受 ref 的 props 必须声明为 `RefObject<HTMLDivElement | null>`（含 `| null`）。Vercel 等 CI 环境执行 `tsc -b` 会因此失败。

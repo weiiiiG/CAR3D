@@ -2,7 +2,7 @@ import { Fragment } from 'react'
 
 interface HudBarProps{
   hot:string|null
-  tbRef:React.RefObject<HTMLDivElement>
+  tbRef:React.RefObject<HTMLDivElement | null>
   hi:Record<string,{label:string;desc:string;spec:string}>
   onHotspotClick:(key:string)=>void
   onReset:()=>void

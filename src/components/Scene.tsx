@@ -23,15 +23,15 @@ interface SceneRefs {
 }
 
 interface SceneProps {
-  scopeRef: React.RefObject<HTMLDivElement>
+  scopeRef: React.RefObject<HTMLDivElement | null>
   sceneRefs: SceneRefs
   setProg: (prog: number) => void
-  loRef: React.RefObject<HTMLDivElement>
-  ltRef: React.RefObject<HTMLHeadingElement>
-  ldRef: React.RefObject<HTMLDivElement>
-  prRef: React.RefObject<HTMLDivElement>
-  lsRef: React.RefObject<HTMLDivElement>
-  tbRef: React.RefObject<HTMLDivElement>
+  loRef: React.RefObject<HTMLDivElement | null>
+  ltRef: React.RefObject<HTMLHeadingElement | null>
+  ldRef: React.RefObject<HTMLDivElement | null>
+  prRef: React.RefObject<HTMLDivElement | null>
+  lsRef: React.RefObject<HTMLDivElement | null>
+  tbRef: React.RefObject<HTMLDivElement | null>
   onHotspotClick: (key: string) => void
   onResetView: () => void
   def: {pos:number[];target:number[]}

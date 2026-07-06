@@ -156,6 +156,7 @@ feat: 新功能 / fix: 修复 / docs: 文档更新 / chore: 构建/工具 / refa
 3. **ECharts 配置拒绝函数**：doors 柱状图的 `itemStyle.color` 回调函数无法序列化存入数据库 JSONB，改用 `data: [{value, itemStyle:{color}}]` 每项独立颜色。
 4. **Scene 车门节点空安全**：如果 glTF 模型缺少 `door_lf_ok_0`/`door_rf_ok_1`，`dd[0]!.bq` 会崩溃。需加 `dd.length > 0` 守卫。
 5. **CSS 变量不要重复声明**：`--accent-dim` 被声明了两次，后值覆盖前值，可能造成阅读困惑。
+6. **React 19 RefObject 类型必须含 `| null`**：`useRef<HTMLDivElement>(null)` 返回 `RefObject<HTMLDivElement | null>`，组件接口必须写 `RefObject<HTMLDivElement | null>`，否则 `tsc -b` 构建失败（Vercel 部署常见）。
 
 ### 后端
 1. **PrismaService 硬编码数据库密码**：忽略 `.env` 的 `DATABASE_URL`。修复：`new pg.Pool({ connectionString: process.env.DATABASE_URL })`。
