@@ -65,3 +65,14 @@ model MockVehicle {
 
   @@map("mock_vehicles")
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(200)
+  role      String   @default("admin") @db.VarChar(20)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}

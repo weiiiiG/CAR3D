@@ -95,6 +95,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
     <a onclick="switchPage('dashboard')" data-page="dashboard" class="active">仪表盘</a>
     <a onclick="switchPage('views')" data-page="views">视角管理</a>
     <a onclick="switchPage('data')" data-page="data">数据概览</a>
+    <a onclick="switchPage('users')" data-page="users" style="color:var(--accent)">用户管理</a>
     <a onclick="switchPage('settings')" data-page="settings">设置</a>
   </div>
   <div style="flex:1;min-height:4px"></div>
@@ -180,6 +181,18 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;
 </div>
 </div>
 
+<!-- ===== Users Management ===== -->
+<div class="page" id="page-users">
+  <h1>用户管理</h1>
+  <div class="subtitle">添加和管理管理员账户</div>
+  <div class="data-table-wrap">
+    <div class="table-head"><h3>用户列表</h3><button class="btn-add" onclick="openAddUser()">+ 新增用户</button></div>
+    <table class="data-table"><thead><tr>
+      <th>ID</th><th>用户名</th><th>角色</th><th>创建时间</th><th style="width:100px">操作</th>
+    </tr></thead><tbody id="usersBody"></tbody></table>
+  </div>
+</div>
+
 <div id="modalBox" style="display:none"></div>
 <div id="toastBox"></div>
 
@@ -202,9 +215,9 @@ function switchPage(name){
   document.querySelectorAll('[data-page]').forEach(function(a){a.classList.remove('active')});
   document.getElementById('page-'+name).classList.add('active');
   document.querySelector('[data-page="'+name+'"]').classList.add('active');
-  // 切页时重新初始化图表以触发动画
   if(name==='dashboard'){dashCharts.forEach(function(c){try{c.dispose()}catch(e){}});initCharts();}
   if(name==='data') initMockCharts();
+  if(name==='users') loadUsers();
 }
 
 // ─── Dashboard charts ───
@@ -499,7 +512,58 @@ function captureFromScene(key){
 
 function reSeed(){
   if(!confirm('将清空所有数据并重新导入初始数据，确定吗？'))return;
-  fetch(API+'/seed',{method:'POST'}).then(function(){toast('数据已重置');loadData()}).catch(function(){toast('重置失败')});
+  fetch(API+'/seed',{method:'POST',headers:authHeader()}).then(function(){toast('数据已重置');loadData()}).catch(function(){toast('重置失败')});
+}
+
+// ─── Token / Auth ───
+var adminToken='';
+function authHeader(){
+  var t=adminToken||localStorage.getItem('admin_token')||'';
+  return t?{'Content-Type':'application/json','Authorization':'Bearer '+t}:{'Content-Type':'application/json'};
+}
+function fetchAuth(url,opt){
+  opt=opt||{};opt.headers=authHeader();opt.headers['Content-Type']='application/json';
+  return fetch(url,opt);
+}
+
+// ─── Users CRUD ───
+var usersData=[];
+function renderUsersTable(){
+  var h=document.getElementById('usersBody');
+  if(!usersData.length){h.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-soft)">加载中...</td></tr>';return}
+  h.innerHTML=usersData.map(function(u){
+    return '<tr><td class="key-cell">'+u.id+'</td><td style="color:var(--ink);font-weight:600">'+u.username+'</td>'+
+      '<td><span class="badge">'+u.role+'</span></td>'+
+      '<td>'+u.createdAt+'</td>'+
+      '<td>'+(u.username!=='admin'?'<button class="btn danger" onclick="deleteUser('+u.id+')">删除</button>':'<span style="color:var(--ink-soft);font-size:11px">—</span>')+'</td></tr>';
+  }).join('');
+}
+function loadUsers(){
+  fetchAuth(API+'/users').then(function(r){
+    if(r.status===401){document.getElementById('usersBody').innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-soft)">请先登录 (返回 3D 展示页重新进入)</td></tr>';return}
+    return r.json();
+  }).then(function(d){if(d){usersData=d;renderUsersTable()}}).catch(function(){});
+}
+function openAddUser(){
+  var m=document.getElementById('modalBox');m.style.display='block';
+  m.innerHTML='<div class="modal-mask" onclick="closeModal()"><div class="modal-panel" onclick="event.stopPropagation()">'+
+    '<h2>新增用户</h2><div class="form-grid">'+
+    '<div class="form-group full"><label>用户名</label><input id="nuName" placeholder="如: editor"/></div>'+
+    '<div class="form-group full"><label>密码</label><input id="nuPass" type="password" placeholder="初始密码"/></div>'+
+    '</div><div class="modal-actions">'+
+    '<button class="btn" onclick="closeModal()">取消</button>'+
+    '<button class="btn primary" onclick="saveUser()">创建</button></div></div></div>';
+}
+function saveUser(){
+  var name=document.getElementById('nuName').value;var pass=document.getElementById('nuPass').value;
+  if(!name||!pass){toast('请填写用户名和密码');return}
+  fetchAuth(API+'/users',{method:'POST',body:JSON.stringify({username:name,password:pass})})
+  .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.message)});closeModal();toast('用户已创建');loadUsers()})
+  .catch(function(e){toast(e.message||'创建失败')});
+}
+function deleteUser(id){
+  if(!confirm('确定删除此用户吗？'))return;
+  fetchAuth(API+'/users/'+id,{method:'DELETE'}).then(function(){toast('已删除');loadUsers()}).catch(function(){toast('删除失败')});
 }
 
 // ─── Load data ───
@@ -522,6 +586,10 @@ function loadData(){
 
 // ─── Boot ───
 window.onload=function(){
+  // 从 URL 参数或 localStorage 读取 token
+  var params=new URLSearchParams(window.location.search);
+  adminToken=params.get('token')||localStorage.getItem('admin_token')||'';
+  if(adminToken)localStorage.setItem('admin_token',adminToken);
   initCharts();
   loadData();
 };

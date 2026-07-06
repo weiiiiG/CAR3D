@@ -2,9 +2,11 @@ interface LoginModalProps{
   open:boolean
   loginErr:string
   onClose:()=>void
-  onSuccess:()=>void
+  onSuccess:(token:string)=>void
   onLoginError:(msg:string)=>void
 }
+
+const API_BASE='http://localhost:3000/api'
 
 export default function LoginModal({open,loginErr,onClose,onSuccess,onLoginError}:LoginModalProps){
   if(!open)return null
@@ -22,15 +24,17 @@ export default function LoginModal({open,loginErr,onClose,onSuccess,onLoginError
         {loginErr&&<div style={{fontSize:11,color:'#EF4444',textAlign:'center'}}>{loginErr}</div>}
       </div>
       <button className="mgmt-save-btn login-btn" style={{width:'100%',padding:'10px 0',fontSize:13}}
-        onClick={()=>{
+        onClick={async ()=>{
           const u=(document.getElementById('loginUser') as HTMLInputElement)?.value
           const p=(document.getElementById('loginPass') as HTMLInputElement)?.value
-          if(u==='admin'&&p==='123456'){
+          try{
+            const r=await fetch(`${API_BASE}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+            if(!r.ok){onLoginError('用户名或密码错误');return}
+            const d=await r.json()
+            localStorage.setItem('admin_token',d.access_token)
             onClose()
-            onSuccess()
-          } else {
-            onLoginError('用户名或密码错误')
-          }
+            onSuccess(d.access_token)
+          }catch(e){onLoginError('无法连接后端服务')}
         }}>进入后台</button>
     </div>
   </div>)

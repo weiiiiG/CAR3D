@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 const SEED_DATA = [
   {
@@ -129,6 +130,15 @@ export class SeedService implements OnModuleInit {
       console.log(`[Seed] 成功导入 ${MOCK_VEHICLE_DATA.length} 辆模拟车辆`);
     } else {
       console.log(`[Seed] mock_vehicles 表已有 ${mvCount} 条数据，跳过 seed`);
+    }
+
+    // 初始化管理员用户
+    const userCount = await this.prisma.user.count();
+    if (userCount === 0) {
+      console.log('[Seed] 创建管理员用户...');
+      const hash = await bcrypt.hash('123456', 10);
+      await this.prisma.user.create({ data: { username: 'admin', password: hash, role: 'admin' } });
+      console.log('[Seed] 管理员用户已创建 (admin/123456)');
     }
   }
 

@@ -8,7 +8,8 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/View.js'
-export type * from './models/ViewOverride.js'
-export type * from './models/MockVehicle.js'
-export type * from './commonInputTypes.js'
+export type * from './models/View'
+export type * from './models/ViewOverride'
+export type * from './models/MockVehicle'
+export type * from './models/User'
+export type * from './commonInputTypes'
