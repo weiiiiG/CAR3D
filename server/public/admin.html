@@ -668,10 +668,7 @@ function loadData(){
 
 // ─── Boot ───
 window.onload=function(){
-  var params=new URLSearchParams(window.location.search);
-  adminToken=params.get('token')||localStorage.getItem('admin_token')||'';
-  if(adminToken)localStorage.setItem('admin_token',adminToken);
-  // 先隐藏所有页面，初始化图表
+  adminToken=localStorage.getItem('admin_token')||'';
   showLogin();
   initCharts();
   if(adminToken){

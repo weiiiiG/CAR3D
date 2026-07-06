@@ -176,7 +176,7 @@ function App(){
     <div className="hint">SELECT VIEW · DRAG TO EXPLORE · RESET TO RETURN</div>
     <LoginModal open={loginOpen} loginErr={loginErr}
       onClose={()=>{setLoginOpen(false);setLoginErr('')}}
-      onSuccess={(token)=>window.open('/admin.html?token='+token,'_blank')}
+      onSuccess={()=>window.location.href='/admin.html'}
       onLoginError={setLoginErr}/>
     <CapturePanel captureKey={captureKey} capturePos={capturePos}
       onSave={()=>{
