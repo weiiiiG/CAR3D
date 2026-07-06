@@ -161,6 +161,10 @@ html, body, #root {
   width: clamp(320px, 36vw, 440px);
   max-height: 80vh;
 }
+.annotation-panel.panel-left {
+  right: auto;
+  left: clamp(16px, 3vw, 32px);
+}
 .panel-frame {
   position: absolute; inset: 0;
   width: 100%; height: 100%;

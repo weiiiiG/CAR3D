@@ -8,7 +8,7 @@ interface AnnotationPanelProps{
 
 export default function AnnotationPanel({hot,pnRef,chRef,hi,co}:AnnotationPanelProps){
   if(!hot||!hi[hot])return null
-  return(<div className="annotation-panel" ref={pnRef}>
+  return(<div className={`annotation-panel ${hot==='wheels'?'panel-left':''}`} ref={pnRef}>
     <svg className="panel-frame" preserveAspectRatio="none">
       <rect x="0.5" y="0.5" width="calc(100% - 1px)" height="calc(100% - 1px)" pathLength={1}/>
     </svg>
