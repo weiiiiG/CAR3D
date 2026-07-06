@@ -15,14 +15,16 @@ npm run dev          # 开发服务器 → localhost:5180
 - CSS 变量在 `index.css:root` 定义，组件用 `var(--xxx)` 引用
 
 ## Three.js 注意事项
-- `useGSAP` cleanup 中必须：`gsap.ticker.remove(tick)`、`ctrl.dispose()`、`re.dispose()`
+- Scene 组件使用 `useEffect` 初始化，不要在子组件中用 `useGSAP({scope: parentRef})`，GSAP 上下文无法跨组件传递
 - 模型遍历 `scene.traverse` 释放 geometry/material
-- 点光/方向光不需要手动 dispose，但 `PMREMGenerator` 需要 `dispose()`
+- 点光/方向光不需要手动 dispose。`HDRLoader` 不需要 `PMREMGenerator`
+- `RGBELoader` 已废弃，改用 `HDRLoader`，直接 `loader.load()` 返回的 texture 设 `mapping = EquirectangularReflectionMapping` 即可
 
 ## GSAP 管理
 - timeline 用 `useRef` 存储
 - unmount 时 `kill()` 所有 timeline/tween
-- `contextSafe` 包裹异步操作中的 GSAP 动画
+- 加载动画用 `gsap.timeline` + `onComplete` 回调控制流程（文字动画播完 → 模型就绪 → 延迟 1s → 轨道动画）
+- `contextSafe` 移除后注意清理多余括号
 
 ## ECharts
 - 每次 `hot` 变化：先 `dispose()` 旧实例 → `init()` 新实例
@@ -58,3 +60,5 @@ feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 
 4. **`useGSAP` 不能跨组件传递 scope**：子组件的 `useGSAP({scope: parentRef})` 会导致 GSAP 上下文无法正确初始化，回调被跳过。Three.js 场景初始化不需要 GSAP 上下文管理，应使用 `useEffect` 替代 `useGSAP`。
 5. **`contextSafe` 移除后残留括号**：去掉 `contextSafe((fn)=>{...})` 后多一个 `)`，Vite 编译时报 "Expected a semicolon" 错误。加载器回调参数括号需同步清理。
 6. **RGBELoader 已废弃**：Three.js 0.184 中 `RGBELoader` 替换为 `HDRLoader`。旧用法需 PMREMGenerator 处理，新用法直接 `HDRLoader.load()` 返回的 texture 设置 `mapping = EquirectangularReflectionMapping` 即可作为 `scene.environment`。
+7. **`switchPage` 与内联 `display:none` 冲突**：`showLogin()` 用 `p.style.display='none'` 隐藏页面，但 `switchPage` 之前只操作 CSS class，class 无法覆盖内联样式。修复：`switchPage` 中改用 `p.style.display='block'|'none'` 控制。
+8. **`window.open` vs `location.href`**：导航必须在同一标签页时不要用 `window.open(url,'_blank')`，改用 `location.href=url`。特别是「返回 3D 展示」和管理后台入口按钮。

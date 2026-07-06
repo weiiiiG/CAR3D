@@ -6,14 +6,17 @@ NestJS 11 + Prisma 7 + PostgreSQL 18 + pg
 ## 启动
 ```bash
 cd server
-npm run start:dev
+npm run start:dev    # 开发模式
+# 管理后台: http://localhost:5180/admin.html（通过 Vite 代理）
+# 直接 API: http://localhost:3000/api
+默认用户: admin / super_admin / 密码 123456
 ```
-管理后台: http://localhost:3000/admin (admin/123456)
 
 ## 模块规范
-- 每个功能模块一个目录：`views/`, `mock-vehicles/`, `seed/`
+- 每个功能模块一个目录：`auth/`, `users/`, `dashboard/`, `views/`, `mock-vehicles/`, `seed/`
 - 模块注册在 `app.module.ts` 的 `imports` 数组
 - 全局 PrismaService 由 `@Global()` PrismaModule 提供
+- JWT 路由守卫用 `@UseGuards(JwtAuthGuard)`，加到 Controller 级别
 
 ## Prisma 使用约定
 - 所有数据库操作通过 `prisma` 服务（`PrismaService`）执行
