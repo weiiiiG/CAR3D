@@ -7,12 +7,15 @@
 ```
 server/
 ├── prisma/                    # Prisma schema + 配置
-│   └── schema.prisma          # 3 个模型: View, ViewOverride, MockVehicle
+│   └── schema.prisma          # 4 个模型: View, ViewOverride, MockVehicle, User, DashboardConfig
 ├── src/
 │   ├── prisma/                # PrismaService（全局单例）
+│   ├── auth/                  # JWT 认证（access_token 15min + refresh_token HttpOnly Cookie）
+│   ├── users/                 # 用户管理（super_admin / admin / user 三级角色）
+│   ├── dashboard/             # 仪表盘图表配置（数据库驱动）
 │   ├── views/                 # 视角管理模块（CRUD + overrides）
 │   ├── mock-vehicles/         # Mock 车辆数据模块
-│   ├── seed/                  # 初始化数据导入（views + mock_vehicles，自动运行）
+│   ├── seed/                  # 初始化数据导入（6 视角 + 12 车辆 + 3 用户 + 仪表盘配置）
 │   └── @generated/            # Prisma Client 生成代码
 ├── public/                    # 静态文件（管理后台 admin.html）
 └── dist/                      # 编译产出

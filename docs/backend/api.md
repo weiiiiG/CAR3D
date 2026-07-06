@@ -2,6 +2,32 @@
 
 **Base URL:** `http://localhost:3000/api`
 
+## Auth
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST | `/api/auth/login` | 登录，返回 access_token + 设置 refresh_token HttpOnly Cookie |
+| POST | `/api/auth/refresh` | 用 Cookie 中的 refresh_token 换取新的 access_token |
+| POST | `/api/auth/logout` | 清除 refresh_token Cookie |
+| GET | `/api/auth/me` | 获取当前用户信息（需 Bearer token） |
+
+## Users（需 JWT 认证）
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/users` | 用户列表 |
+| POST | `/api/users` | 新增用户 |
+| PATCH | `/api/users/:id` | 修改用户（用户名/角色） |
+| DELETE | `/api/users/:id` | 删除用户 |
+
+## Dashboard
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/dashboard` | 获取所有仪表盘图表配置 |
+| GET | `/api/dashboard/:key` | 获取单个图表配置 |
+| PUT | `/api/dashboard/:key` | 更新图表配置 |
+
 ## Views
 
 | 方法 | 路径 | 说明 |
@@ -34,4 +60,4 @@
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | POST | `/api/seed` | 重新导入所有初始数据（views + mock_vehicles） |
-| GET | `/admin` | 管理后台页面 |
+| GET | `/admin.html` | 管理后台页面（通过 Vite 代理同端口服务） |

@@ -13,7 +13,7 @@ npm run dev
 cd D:/threejs/3D/server
 npm run start:dev
 
-# 管理后台: http://localhost:3000/admin (admin/123456)
+# 管理后台: http://localhost:5180/admin.html (通过 Vite 代理)
 # 前端: http://localhost:5180
 ```
 
@@ -22,8 +22,19 @@ npm run start:dev
 /3D/                    前端 (Vite + React + Three.js + GSAP)
 /3D/server/             后端 (NestJS + Prisma + PostgreSQL)
 ├── prisma/schema.prisma 数据库模型 (Prisma ORM)
-├── src/{views,mock-vehicles,seed,prisma}/
-└── public/admin.html    管理后台页面（仪表盘/视角管理/数据概览/设置 共 4 页）
+├── src/{auth,users,dashboard,views,mock-vehicles,seed,prisma}/
+└── public/admin.html    管理后台页面（仪表盘/视角管理/数据概览/用户管理/设置）
+
+## 角色体系
+| 角色 | 权限 |
+|---|---|
+| super_admin | 全部权限 + 用户管理 |
+| admin | 视角 CRUD，不可管理用户 |
+| user | 仅查看仪表盘和数据概览 |
+
+## 认证机制
+- Access Token（15 分钟）：前端内存变量
+- Refresh Token（7 天）：HttpOnly Cookie（`/api/auth` 路径），无感续期
 /3D/docs/               文档体系
 ├── backend/{architecture,api,database,CLAUDE}.md
 └── frontend/{architecture,CLAUDE}.md

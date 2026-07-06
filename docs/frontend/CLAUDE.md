@@ -40,6 +40,12 @@ npm run dev          # 开发服务器 → localhost:5180
 feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 重构
 ```
 
+## 认证规范
+- JWT access_token 存在内存变量（`adminToken`），不持久化到 localStorage
+- refresh_token 由后端 HttpOnly Cookie 管理，前端不可读
+- 所有 API 通过 `fetchAuth()` 调用，自动处理 401 → refresh → 重试
+- 页面启动时尝试 `/api/auth/refresh` 静默恢复会话
+
 ## 踩坑记录
 
 1. **HMR 后 GSAP timeline 重复执行**：Vite HMR 更新组件时，`useGSAP` 的 cleanup 可能未正确销毁旧 timeline，导致多次初始化。确保 `useRef` 存储的 timeline 在 cleanup 中执行 `kill()`。
