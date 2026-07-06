@@ -47,6 +47,7 @@ feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 
 - refresh_token 由后端 HttpOnly Cookie 管理，前端不可读
 - 所有 API 通过 `fetchAuth()` 调用，自动处理 401 → refresh → 重试
 - 页面启动时尝试 `/api/auth/refresh` 静默恢复会话
+- API 使用相对路径 `/api`（非 `http://localhost:3000/api`），确保 Cookie 同域名生效
 
 ## 踩坑记录
 

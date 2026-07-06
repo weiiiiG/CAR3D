@@ -15,12 +15,13 @@ export default defineConfig({
         server.middlewares.use((req, res, next) => {
           if (req.url === '/admin' || req.url === '/admin.html' || req.url?.startsWith('/admin?')) {
             const filePath = path.resolve(__dirname, 'public/admin.html');
-          if (fs.existsSync(filePath)) {
-            res.setHeader('Content-Type', 'text/html; charset=utf-8');
-            res.end(fs.readFileSync(filePath, 'utf-8'));
-          } else {
-            next();
+            if (fs.existsSync(filePath)) {
+              res.setHeader('Content-Type', 'text/html; charset=utf-8');
+              res.end(fs.readFileSync(filePath, 'utf-8'));
+              return;
+            }
           }
+          next();
         });
       },
     },
