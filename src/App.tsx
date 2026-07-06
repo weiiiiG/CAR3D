@@ -17,6 +17,15 @@ const HI:Record<string,{label:string;desc:string;spec:string}>={front:{label:'�
 // ───── 内置相机视角 ─────
 const BUILTIN_VIEWS:Record<string,{pos:number[];target:number[]}>={front:{pos:[0,1.8,9.5],target:[-0.8,0.6,0]},side:{pos:[11,1.7,0.1],target:[-0.8,0.6,0]},'45':{pos:[7,3,7],target:[-0.8,0.6,0]},interior:{pos:[-0.05,0.58,0.35],target:[0,0.3,3.2]},doors:{pos:[3.5,1.6,2.4],target:[0.2,0.5,0]},wheels:{pos:[4.0,0.9,5.0],target:[0.4,0.3,1.8]}}
 const API_BASE='http://localhost:3000/api'
+// 视角描述数据 — 启动时从 API 拉取覆盖硬编码默认值，数据库 views 表存储所有数据
+fetch(API_BASE+'/views').then(r=>r.json()).then((d:any[])=>{
+  for(const v of d){
+    HI[v.key]={label:v.label,desc:v.description||'',spec:v.spec||''}
+    if(v.chartConfig)CO[v.key]=v.chartConfig
+  }
+})
+const HI:Record<string,{label:string;desc:string;spec:string}>={front:{label:'前脸',desc:'激进车身套件搭配碳纤维进气口。',spec:'1,244 hp'},side:{label:'侧颜',desc:'风洞打磨的流畅空气动力学轮廓。',spec:'Cd 0.35'},'45':{label:'座舱',desc:'以驾驶者为中心的座舱预览。',spec:'RWD 底盘'},interior:{label:'内饰',desc:'Alcantara 翻毛皮与碳纤维座舱。',spec:'单座布局'},doors:{label:'鸥翼门',desc:'向上开启的碳纤维车门。',spec:'单扇 2.7 kg'},wheels:{label:'轮毂',desc:'20 英寸锻造合金轮毂。',spec:'Pilot Sport Cup 2'}}
+const CO:Record<string,any>={front:{radar:{indicator:[{name:'Horsepower',max:1500},{name:'Torque',max:1200},{name:'Top Speed',max:350},{name:'0-60',max:3.5},{name:'Downforce',max:500}],axisName:{color:'#92949E',fontSize:9},splitArea:{areaStyle:{color:['rgba(255,188,10,0.04)','rgba(255,188,10,0.10)']}},splitLine:{lineStyle:{color:'rgba(228,229,235,0.12)'}},axisLine:{lineStyle:{color:'rgba(228,229,235,0.12)'}}},series:[{type:'radar',data:[{value:[1244,1155,301,2.7,450]}],areaStyle:{color:'rgba(255,188,10,0.28)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'}}]},side:{xAxis:{type:'category',data:['Length','Width','Height','Wheelbase'],axisLabel:{color:'#92949E',fontSize:9},axisLine:{lineStyle:{color:'rgba(228,229,235,0.18)'}}},yAxis:{type:'value',axisLabel:{color:'#6B7280'},splitLine:{lineStyle:{color:'rgba(228,229,235,0.08)'}}},series:[{type:'bar',data:[4650,1960,1130,2800],itemStyle:{color:'#FFBC0A'}}]},'45':{tooltip:{trigger:'item'},series:[{type:'pie',radius:['40%','60%'],data:[{value:45,name:'Carbon Fibre',itemStyle:{color:'#2D3040'}},{value:30,name:'Alcantara',itemStyle:{color:'#6B7280'}},{value:15,name:'Leather',itemStyle:{color:'#FFBC0A'}},{value:10,name:'Aluminium',itemStyle:{color:'#D99A00'}}],label:{color:'#92949E',fontSize:9}}]},interior:{xAxis:{type:'category',data:['1k','2k','3k','4k','5k','6k','7k'],axisLabel:{color:'#92949E',fontSize:9},axisLine:{lineStyle:{color:'rgba(228,229,235,0.18)'}}},yAxis:{type:'value',name:'RPM',nameTextStyle:{color:'#6B7280'},axisLabel:{color:'#6B7280'},splitLine:{lineStyle:{color:'rgba(228,229,235,0.08)'}}},series:[{type:'line',data:[15,40,80,140,200,270,301],smooth:true,areaStyle:{color:'rgba(255,188,10,0.18)'},lineStyle:{color:'#FFBC0A',width:2},itemStyle:{color:'#FFBC0A'}}]},doors:{xAxis:{type:'category',data:['Carbon','Steel','Aluminium'],axisLabel:{color:'#92949E',fontSize:9},axisLine:{lineStyle:{color:'rgba(228,229,235,0.18)'}}},yAxis:{type:'value',name:'kg',nameTextStyle:{color:'#6B7280'},axisLabel:{color:'#6B7280'},splitLine:{lineStyle:{color:'rgba(228,229,235,0.08)'}}},series:[{type:'bar',data:[2.7,8.5,5.1],itemStyle:{color:'#FFBC0A'}}]},wheels:{series:[{type:'gauge',startAngle:180,endAngle:0,min:0,max:320,axisLine:{lineStyle:{width:8,color:[[0.3,'#6B7280'],[0.7,'#FFBC0A'],[1,'#D99A00']]}},axisLabel:{color:'#6B7280',fontSize:9},detail:{formatter:'{value} km/h',color:'#E4E5EB',fontSize:11},title:{color:'#92949E'},data:[{value:196,name:'Top Speed Locked'}]}]}}
 function loadOverrides():Record<string,{pos:number[];target:number[]}>{
   try{return JSON.parse(localStorage.getItem('car3d_view_overrides')||'{}')}catch{return{}}
 }
@@ -176,7 +185,7 @@ function App(){
     <div className="hint">SELECT VIEW · DRAG TO EXPLORE · RESET TO RETURN</div>
     <LoginModal open={loginOpen} loginErr={loginErr}
       onClose={()=>{setLoginOpen(false);setLoginErr('')}}
-      onSuccess={()=>window.location.href='/admin.html'}
+      onSuccess={()=>window.location.href='/admin'}
       onLoginError={setLoginErr}/>
     <CapturePanel captureKey={captureKey} capturePos={capturePos}
       onSave={()=>{
@@ -184,9 +193,9 @@ function App(){
         if(!cam||!ctrl)return
         localStorage.setItem('admin_capture',JSON.stringify({pos:[cam.position.x,cam.position.y,cam.position.z],target:[ctrl.target.x,ctrl.target.y,ctrl.target.z]}))
         alert('视角已保存！正在返回管理后台...')
-        window.location.href='/admin.html'
+        window.location.href='/admin'
       }}
-      onClose={()=>{setCaptureKey(null);window.location.href='/admin.html'}}/>
+      onClose={()=>{setCaptureKey(null);window.location.href='/admin'}}/>
     <ViewManagerPanel open={false} overrides={overrides} hi={HI}
       onUpdate={handleUpdateView} onReset={handleResetOverride} onNavigate={hotspotClick} onClose={()=>{}}/>
   </div>)

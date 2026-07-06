@@ -13,7 +13,7 @@ npm run dev
 cd D:/threejs/3D/server
 npm run start:dev
 
-# 管理后台: http://localhost:5180/admin.html（同端口，同页面跳转）
+# 管理后台: http://localhost:5180/admin（同端口，同页面跳转）
 # 前端: http://localhost:5180
 默认用户: admin / 密码 123456（super_admin 角色）
 ```
@@ -23,7 +23,7 @@ npm run start:dev
 /3D/                    前端 (Vite + React + Three.js + GSAP + ECharts)
 ├── src/App.tsx         主组件
 ├── src/components/     7 个独立组件 (Scene / HudBar / AnnotationPanel / etc.)
-└── public/admin.html   管理后台
+└── public/admin/       管理后台
 
 /3D/server/             后端 (NestJS + Prisma + PostgreSQL)
 ├── prisma/schema.prisma 数据库模型

@@ -60,4 +60,4 @@
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | POST | `/api/seed` | 重新导入所有初始数据（views + mock_vehicles） |
-| GET | `/admin.html` | 管理后台页面（通过 Vite 代理同端口服务） |
+| GET | `/admin` | 管理后台页面（通过 Vite 代理同端口服务） |

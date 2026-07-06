@@ -16,13 +16,13 @@ src/
 2. `GLTFLoader` 加载车身模型，创建 6 个 Hotspot 球体
 3. `OrbitControls` 控制相机，`gsap.ticker` 驱动渲染循环
 4. 点击 HUD 按钮 → `hotspotClick()` → GSAP 飞镜到目标视角 + 面板动画
-5. 齿轮图标 → LoginModal → JWT 登录 → 同页面跳转 `/admin.html`
+5. 齿轮图标 → LoginModal → JWT 登录 → 同页面跳转 `/admin`
 
 ## 认证流程
 1. 用户点击齿轮 → LoginModal 弹窗
 2. 填写用户名密码 → `POST /api/auth/login` → 获取 access_token（内存） + refresh_token（HttpOnly Cookie）
-3. 同页面跳转至 `/admin.html`
-4. admin.html 启动时自动 `POST /api/auth/refresh` 尝试静默恢复
+3. 同页面跳转至 `/admin`
+4. admin 页面启动时自动 `POST /api/auth/refresh` 尝试静默恢复
 5. access_token 过期时（401）→ 自动调用 `/api/auth/refresh` 续期 → 重试请求
 6. refresh_token 也过期 → 跳回登录页
 

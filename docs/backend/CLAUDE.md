@@ -7,7 +7,7 @@ NestJS 11 + Prisma 7 + PostgreSQL 18 + pg
 ```bash
 cd server
 npm run start:dev    # 开发模式
-# 管理后台: http://localhost:5180/admin.html（通过 Vite 代理）
+# 管理后台: http://localhost:5180/admin（通过 Vite 代理）
 # 直接 API: http://localhost:3000/api
 默认用户: admin / super_admin / 密码 123456
 ```
