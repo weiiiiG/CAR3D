@@ -222,9 +222,11 @@ function toast(msg){
 
 // ─── Page switching ───
 function switchPage(name){
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.page').forEach(function(p){
+    p.classList.remove('active');
+    p.style.display=p.id==='page-'+name?'block':'none';
+  });
   document.querySelectorAll('[data-page]').forEach(function(a){a.classList.remove('active')});
-  document.getElementById('page-'+name).classList.add('active');
   document.querySelector('[data-page="'+name+'"]').classList.add('active');
   if(name==='dashboard'){dashCharts.forEach(function(c){try{c.dispose()}catch(e){}});initCharts();}
   if(name==='data') initMockCharts();
@@ -526,7 +528,7 @@ function captureFromScene(key){
 
 function reSeed(){
   if(!confirm('将清空所有数据并重新导入初始数据，确定吗？'))return;
-  fetch(API+'/seed',{method:'POST',headers:authHeader()}).then(function(){toast('数据已重置');loadData()}).catch(function(){toast('重置失败')});
+  fetch(API+'/seed',{method:'POST',credentials:'include',headers:authHeader()}).then(function(){toast('数据已重置');loadData()}).catch(function(){toast('重置失败')});
 }
 
 // ─── Auth / Role ───
@@ -566,27 +568,45 @@ function doLogin(){
   var u=document.getElementById('loginUser').value;
   var p=document.getElementById('loginPass').value;
   var err=document.getElementById('loginError');
-  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+  fetch(API+'/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
   .then(function(r){
     if(!r.ok){err.style.display='block';err.textContent='用户名或密码错误';return}
     return r.json();
   }).then(function(d){
     if(!d)return;
-    adminToken=d.access_token;localStorage.setItem('admin_token',adminToken);
+    adminToken=d.access_token;
     err.style.display='none';
-    // 获取用户信息
-    fetch(API+'/auth/me',{headers:aH()}).then(function(r){return r.json()}).then(function(u2){buildSidebar(u2);loadData()});
+    fetch(API+'/auth/me',{credentials:'include',headers:{'Authorization':'Bearer '+adminToken}}).then(function(r){return r.json()}).then(function(u2){buildSidebar(u2);loadData()});
   }).catch(function(){err.style.display='block';err.textContent='无法连接后端服务'});
 }
 
-function aH(){var t=adminToken||localStorage.getItem('admin_token')||'';return t?{'Authorization':'Bearer '+t}:{}}
+// Token refresh: access_token 在内存，refresh_token 在 HttpOnly Cookie
+var refreshPromise=null;
+function aH(){return adminToken?{'Authorization':'Bearer '+adminToken}:{}}
 function authHeader(){var h=aH();h['Content-Type']='application/json';return h;}
 function fetchAuth(url,opt){
-  opt=opt||{};opt.headers=authHeader();return fetch(url,opt);
+  opt=opt||{};opt.headers=opt.headers||{};opt.credentials='include';
+  // 合并 auth header
+  var ah=aH();for(var k in ah)opt.headers[k]=ah[k];
+  if(!opt.headers['Content-Type'])opt.headers['Content-Type']='application/json';
+  return fetch(url,opt).then(function(r){
+    if(r.status!==401||!adminToken)return r;
+    // 401 → 尝试 refresh
+    if(!refreshPromise)refreshPromise=fetch(API+'/auth/refresh',{method:'POST',credentials:'include'}).then(function(r2){
+      if(!r2.ok){adminToken='';refreshPromise=null;return null}
+      return r2.json();
+    }).then(function(d2){if(d2){adminToken=d2.access_token;}refreshPromise=null;return d2;});
+    return refreshPromise.then(function(d2){
+      if(!d2){showLogin();return Promise.reject('Session expired');}
+      ah=aH();for(var k2 in ah)opt.headers[k2]=ah[k2];
+      return fetch(url,opt);
+    });
+  });
 }
 
 function logout(){
-  adminToken='';localStorage.removeItem('admin_token');currentUser=null;
+  fetch(API+'/auth/logout',{method:'POST',credentials:'include'}).catch(function(){});
+  adminToken='';currentUser=null;
   document.getElementById('loginUser').value='admin';document.getElementById('loginPass').value='';showLogin();
 }
 
@@ -668,17 +688,18 @@ function loadData(){
 
 // ─── Boot ───
 window.onload=function(){
-  adminToken=localStorage.getItem('admin_token')||'';
+  adminToken='';
   showLogin();
   initCharts();
-  if(adminToken){
-    fetch(API+'/auth/me',{headers:aH()}).then(function(r){
-      if(!r.ok){showLogin();return}
-      return r.json();
-    }).then(function(u){
-      if(u){buildSidebar(u);loadData()}
-    }).catch(function(){showLogin()});
-  }
+  // 尝试用 refresh cookie 静默恢复登录
+  fetch(API+'/auth/refresh',{method:'POST',credentials:'include'}).then(function(r){
+    if(!r.ok){showLogin();return}
+    return r.json();
+  }).then(function(d){
+    if(!d){showLogin();return}
+    adminToken=d.access_token;
+    fetch(API+'/auth/me',{credentials:'include',headers:{'Authorization':'Bearer '+adminToken}}).then(function(r){return r.json()}).then(function(u){buildSidebar(u);loadData()});
+  }).catch(function(){showLogin()});
 };
 </script>
 </body>
