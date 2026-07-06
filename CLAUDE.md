@@ -23,7 +23,7 @@ npm run start:dev
 /3D/                    前端 (Vite + React + Three.js + GSAP + ECharts)
 ├── src/App.tsx         主组件
 ├── src/components/     7 个独立组件 (Scene / HudBar / AnnotationPanel / etc.)
-└── public/admin/       管理后台
+└── public/admin/       管理后台（admin/index.html）
 
 /3D/server/             后端 (NestJS + Prisma + PostgreSQL)
 ├── prisma/schema.prisma 数据库模型
