@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Car3D Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-brand">CAR<span>3D</span></div>
+  <div class="sidebar-nav" id="sidebarNav"></div>
+  <div style="flex:1;min-height:4px"></div>
+  <div class="sidebar-status" id="sidebarStatus">
+    <span class="dot"></span> <span id="userLabel">未登录</span> <span style="margin-left:auto;font-size:10px" id="roleLabel">—</span>
+  </div>
+  <a class="sidebar-3d" onclick="location.href='/'+window.location.search" style="margin-top:6px">返回 3D 展示</a>
+  <a class="sidebar-3d" id="logoutBtn" style="background:rgba(239,68,68,0.12);color:#EF4444;margin-top:4px" onclick="logout()">退出登录</a>
+</div>
+
+<div class="main">
+<!-- ===== Login ===== -->
+<div class="page" id="page-login" style="display:none;align-items:center;justify-content:center;height:100%">
+  <div style="width:360px;text-align:center">
+    <div style="font-family:var(--display);font-size:32px;letter-spacing:.06em;color:var(--ink);margin-bottom:4px">CAR<span style="color:var(--accent)">3D</span></div>
+    <div style="font-size:12px;color:var(--ink-mute);margin-bottom:20px">管理后台 · 请先在 3D 展示页中登录</div>
+    <div style="margin-bottom:20px"><a class="sidebar-3d" onclick="window.open('/','_blank')" style="display:inline-block;padding:10px 24px;font-size:14px">前往 3D 展示页 →</a></div>
+    <div style="display:flex;flex-direction:column;gap:12px;text-align:left">
+      <input class="mgmt-input" id="loginUser" placeholder="用户名" style="width:100%"/>
+      <input class="mgmt-input" id="loginPass" type="password" placeholder="密码" style="width:100%"/>
+      <div id="loginError" style="font-size:11px;color:#EF4444;text-align:center;display:none"></div>
+      <button class="mgmt-save-btn" style="width:100%;padding:10px 0;font-size:13px" onclick="doLogin()">直接登录</button>
+    </div>
+  </div>
+</div>
+<!-- ===== Dashboard ===== -->
+<div class="page" id="page-dashboard">
+  <h1>仪表盘</h1>
+  <div class="subtitle">Hennessy Venom GT · 数据管理后台</div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="sViews">—</div><div class="stat-label">视角总数</div></div>
+    <div class="stat-card"><div class="stat-num" id="sOverrides">—</div><div class="stat-label">覆盖调整数</div></div>
+    <div class="stat-card"><div class="stat-num" id="sActive">—</div><div class="stat-label">启用的视角</div></div>
+    <div class="stat-card"><div class="stat-num" id="sMock">—</div><div class="stat-label">Mock 数据条目</div></div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card"><h3>规格雷达</h3><div class="chart-box" id="cRadar"></div></div>
+    <div class="chart-card"><h3>尺寸对比</h3><div class="chart-box" id="cBar"></div></div>
+  </div>
+  <div class="charts-row" style="grid-template-columns:1fr 1fr">
+    <div class="chart-card"><h3>材料分布</h3><div class="chart-box" id="cPie"></div></div>
+    <div class="chart-card"><h3>月度访问趋势</h3><div class="chart-box" id="cTrend"></div></div>
+  </div>
+</div>
+<!-- ===== Views ===== -->
+<div class="page" id="page-views">
+  <h1>视角管理</h1>
+  <div class="subtitle">增删改查所有视角配置</div>
+  <div class="data-table-wrap">
+    <div class="table-head"><h3>视角列表</h3><button class="btn-add" onclick="openAdd()">+ 新增视角</button></div>
+    <table class="data-table"><thead><tr>
+      <th>Key</th><th>名称</th><th>分类</th><th>规格</th><th>相机位置</th><th>覆盖</th><th style="width:180px">操作</th>
+    </tr></thead><tbody id="viewsBody"></tbody></table>
+  </div>
+</div>
+<!-- ===== Data ===== -->
+<div class="page" id="page-data">
+  <h1>数据概览</h1>
+  <div class="subtitle">所有视角数据的详细展示 + Mock 数据集</div>
+  <div class="charts-row" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="chart-card"><h3>马力对比</h3><div class="chart-box-sm" id="mBar1"></div></div>
+    <div class="chart-card"><h3>0-100加速</h3><div class="chart-box-sm" id="mBar2"></div></div>
+    <div class="chart-card"><h3>车型分类</h3><div class="chart-box-sm" id="mPie1"></div></div>
+  </div>
+  <div class="charts-row" style="grid-template-columns:1fr 1fr">
+    <div class="chart-card"><h3>超跑性能雷达</h3><div class="chart-box" id="mRadar"></div></div>
+    <div class="chart-card"><h3>极速对比</h3><div class="chart-box" id="mLine"></div></div>
+  </div>
+  <div class="data-table-wrap" style="margin-top:16px">
+    <div class="table-head"><h3>Mock 数据 · 超跑参数对比</h3></div>
+    <table class="data-table"><thead><tr>
+      <th>车型</th><th>马力</th><th>扭矩(Nm)</th><th>0-100km/h</th><th>极速(km/h)</th><th>重量(kg)</th><th>发动机</th><th>年份</th>
+    </tr></thead><tbody id="mockBody"></tbody></table>
+  </div>
+</div>
+<!-- ===== Settings ===== -->
+<div class="page" id="page-settings">
+  <h1>设置</h1><div class="subtitle">系统配置与管理</div>
+  <div class="settings-group">
+    <h3>数据库连接</h3>
+    <div class="setting-row"><span class="setting-label">地址</span><span class="setting-value">localhost:5432/car3d_admin</span></div>
+    <div class="setting-row"><span class="setting-label">表</span><span class="setting-value">views, view_overrides, mock_vehicles</span></div>
+    <div class="setting-row"><span class="setting-label">状态</span><span class="setting-value" style="color:#22C55E">已连接</span></div>
+  </div>
+  <div class="settings-group">
+    <h3>数据操作</h3>
+    <div class="setting-row"><span class="setting-label">重新导入初始数据</span><button style="padding:6px 14px;border-radius:4px;border:none;background:var(--accent);color:var(--bg);cursor:pointer;font-size:11px;font-weight:600" onclick="reSeed()">执行</button></div>
+    <div class="setting-row"><span class="setting-label">API 地址</span><span class="setting-value" style="font-family:monospace;font-size:11px">http://localhost:3000/api</span></div>
+  </div>
+  <div class="settings-group">
+    <h3>关于</h3>
+    <div class="setting-row"><span class="setting-label">版本</span><span class="setting-value">v1.0.0</span></div>
+    <div class="setting-row"><span class="setting-label">技术栈</span><span class="setting-value">React + Three.js + GSAP + NestJS + Prisma + PostgreSQL</span></div>
+  </div>
+</div>
+</div>
+<!-- ===== Users ===== -->
+<div class="page" id="page-users">
+  <h1>用户管理</h1>
+  <div class="subtitle">添加和管理管理员账户</div>
+  <div class="data-table-wrap">
+    <div class="table-head"><h3>用户列表</h3><button class="btn-add" onclick="openAddUser()">+ 新增用户</button></div>
+    <table class="data-table"><thead><tr>
+      <th>ID</th><th>用户名</th><th>角色</th><th>创建时间</th><th style="width:100px">操作</th>
+    </tr></thead><tbody id="usersBody"></tbody></table>
+  </div>
+</div>
+
+<div id="modalBox" style="display:none"></div>
+<div id="toastBox"></div>
+
+<script type="module" src="./admin.js"></script>
+</body>
+</html>

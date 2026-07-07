@@ -10,7 +10,7 @@ cd D:/threejs/3D && npm run dev          # → http://localhost:5180
 # 后端（终端 2）
 cd D:/threejs/3D/server && npm run start:dev # → http://localhost:3000
 # 管理后台
-# http://localhost:5180/admin.html（通过 Vite 代理同端口）
+# http://localhost:5180/admin.html（Vite 多入口）
 ```
 
 默认用户: admin / 123456（super_admin）| editor / 123456（admin）| viewer / 123456（user）
@@ -31,7 +31,11 @@ cd D:/threejs/3D/server && npm run start:dev # → http://localhost:3000
 │       ├── LoginModal.tsx      JWT 登录弹窗
 │       ├── CapturePanel.tsx    3D 坐标捕获（?capture= 模式 → API 保存）
 │       └── ViewManagerPanel.tsx 视角覆盖 CRUD 面板
-├── public/admin.html     管理后台 SPA（独立于 server 侧的双入口）
+├── src/admin/            管理后台 SPA
+│   ├── index.html        HTML 入口
+│   ├── admin.css         独立样式文件
+│   ├── admin.js          ES 模块入口
+│   └── lib/              API/图表/CRUD 功能模块
 └── docs/
     ├── frontend/CLAUDE.md   前端专项规范
     └── backend/{CLAUDE.md,api.md,database.md}
@@ -46,7 +50,7 @@ cd D:/threejs/3D/server && npm run start:dev # → http://localhost:3000
 │   ├── mock-vehicles/    12 台竞品车型数据
 │   ├── seed/             初始化数据（6 视角 + 12 车辆 + 3 用户 + 仪表盘）
 │   └── prisma/           PrismaService @Global() 单例
-├── public/admin.html     管理后台 SPA（与前端 public/ 双入口独立）
+├── src/admin/          管理后台 SPA（src/admin/ 目录）
 └── docs/backend/{CLAUDE.md,api.md,database.md}
 ```
 
