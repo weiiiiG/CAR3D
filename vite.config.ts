@@ -6,7 +6,20 @@ import * as path from 'path'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'admin-rewrite',
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          if (req.url === '/admin.html' || req.url?.startsWith('/admin?')) {
+            req.url = '/src/admin/index.html'
+          }
+          next()
+        })
+      },
+    },
+  ],
   server: {
     port: 5180,
     proxy: {
