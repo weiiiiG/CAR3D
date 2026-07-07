@@ -34,8 +34,10 @@ export default function DataPage() {
       init(rd.current, { legend: { data: rdd.map((d: any) => d.name.split(' ').slice(0, 2).join(' ')), textStyle: { color: '#9CA0B0', fontSize: 10 }, top: 0, left: 'center', itemWidth: 14, itemHeight: 8 }, radar: { center: ['50%', '55%'], radius: '60%', indicator: [{ name: '马力', max: 2000 }, { name: '扭矩(Nm)', max: 2500 }, { name: '极速(km/h)', max: 500 }, { name: '重量(kg)', max: 2500 }, { name: '售价(万$)', max: 400 }], axisName: { color: '#9CA0B0', fontSize: 11 }, splitArea: { areaStyle: { color: ['rgba(255,188,10,0.03)', 'rgba(255,188,10,0.08)'] } }, splitLine: { lineStyle: { color: 'rgba(240,241,244,0.06)' } } }, series: [{ type: 'radar', data: rdd.map((d: any, i: number) => ({ value: [d.hp, d.torque, d.topSpeed, d.weight, d.price], name: d.name.split(' ').slice(0, 2).join(' '), lineStyle: { color: ['#FFBC0A', '#D99A00', '#38BDF8', '#EF4444'][i], width: 2 }, areaStyle: { color: ['#FFBC0A', '#D99A00', '#38BDF8', '#EF4444'][i], opacity: 0.08 }, itemStyle: { color: ['#FFBC0A', '#D99A00', '#38BDF8', '#EF4444'][i] } })) }] })
       const ts = sorted(d => d.topSpeed); init(ml.current, { grid: { top: 12, bottom: 36, left: 40, right: 10 }, xAxis: { type: 'category', data: ts.map((d: any) => d.name.split(' ').pop()), axisLabel: { color: '#9CA0B0', fontSize: 10, interval: 0 }, axisLine: { lineStyle: { color: 'rgba(240,241,244,0.08)' } } }, yAxis: { type: 'value', name: 'km/h', axisLabel: { color: '#5C5F6E', fontSize: 9 }, splitLine: { lineStyle: { color: 'rgba(240,241,244,0.06)' } } }, series: [{ type: 'bar', data: ts.map((d: any, i: number) => ({ value: d.topSpeed, itemStyle: { color: colors[i] } })), barMaxWidth: 28, label: { show: true, position: 'top', color: '#FFBC0A', fontSize: 9, formatter: '{c}' } }] })
       setTimeout(() => ch.forEach(c => c.resize()), 100)
+      const onResize = () => ch.forEach(c => c.resize())
+      window.addEventListener('resize', onResize)
     }).catch(() => { setLoading(false); toast('加载失败') })
-    return () => ch.forEach(c => c.dispose())
+    return () => { ch.forEach(c => c.dispose()); window.removeEventListener('resize', onResize) }
   }, [])
 
   const sorted = data.slice().sort((a, b) => b.hp - a.hp)

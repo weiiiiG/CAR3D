@@ -15,8 +15,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const ch: echarts.ECharts[] = []
-    function init(id: HTMLDivElement | null, opt: any) { if (!id) return; const c = echarts.init(id); c.setOption(opt); c.resize(); ch.push(c) }
+    function init(id: HTMLDivElement | null, opt: any) { if (!id) return; const c = echarts.init(id); c.setOption(opt); ch.push(c) }
 
+    const onResize = () => ch.forEach(c => c.resize())
+    window.addEventListener('resize', onResize)
     fetch(API + '/dashboard').then(r => r.json()).catch(() => ({})).then(dash => {
       Promise.all([fetch(API + '/views'), fetch(API + '/overrides'), fetch(API + '/mock-vehicles')])
         .then(rs => Promise.all(rs.map(r => r.json())))
@@ -40,7 +42,7 @@ export default function DashboardPage() {
           if (trend) { const cs = ['#FFBC0A', '#D99A00', '#6B7280', '#5C5F6E']; const sym = ['circle', 'diamond', 'triangle', 'rect']; init(trendRef.current, { grid: { top: 28, bottom: 24, left: 44, right: 12 }, legend: { data: trend.series.map((s: any) => s.name), textStyle: { color: '#9CA0B0', fontSize: 10 }, itemWidth: 12, itemHeight: 8, top: 0, right: 0 }, xAxis: { type: 'category', data: trend.months, axisLabel: { color: '#9CA0B0', fontSize: 11 }, axisLine: { lineStyle: { color: 'rgba(240,241,244,0.08)' } } }, yAxis: { type: 'value', axisLabel: { color: '#5C5F6E', fontSize: 10, formatter: '{value}次' }, splitLine: { lineStyle: { color: 'rgba(240,241,244,0.06)' } } }, series: trend.series.map((s: any, i: number) => ({ name: s.name, type: 'line', data: s.data, smooth: true, lineStyle: { color: cs[i], width: 2 }, itemStyle: { color: cs[i] }, areaStyle: { color: cs[i], opacity: 0.1 }, symbol: sym[i], symbolSize: 6 })) }) }
         }).catch(() => toast('无法连接后端服务'))
     })
-    return () => ch.forEach(c => c.dispose())
+    return () => { ch.forEach(c => c.dispose()); window.removeEventListener('resize', onResize) }
   }, [])
 
   return (
