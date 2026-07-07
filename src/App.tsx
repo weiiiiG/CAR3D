@@ -10,6 +10,7 @@ import SettingsPage from './pages/admin/SettingsPage'
 import LoginPage from './pages/admin/LoginPage'
 import { useAdminAuth } from './hooks/useAdminAuth'
 import { AuthCtx } from './hooks/AuthContext'
+import ErrorBoundary from './components/ErrorBoundary'
 import './index.css'
 
 function AdminApp() {
@@ -23,11 +24,11 @@ function AdminApp() {
       <AdminLayout menu={menu} canManage={canManage} onLogout={() => { fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {}); logout() }}>
         <Routes>
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="views" element={<ViewsPage />} />
-          <Route path="data" element={<DataPage />} />
-          {canManage && <Route path="users" element={<UsersPage />} />}
-          <Route path="settings" element={<SettingsPage />} />
+          <Route path="dashboard" element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
+          <Route path="views" element={<ErrorBoundary><ViewsPage /></ErrorBoundary>} />
+          <Route path="data" element={<ErrorBoundary><DataPage /></ErrorBoundary>} />
+          {canManage && <Route path="users" element={<ErrorBoundary><UsersPage /></ErrorBoundary>} />}
+          <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
         </Routes>
       </AdminLayout>
     </AuthCtx.Provider>
