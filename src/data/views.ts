@@ -45,7 +45,7 @@ export const CO: Record<string, any> = {
   },
   wheels: {
     series: [{
-      type: 'gauge', startAngle: 200, endAngle: -20, min: 0, max: 320, center: ['50%', '40%'], radius: '98%',
+      type: 'gauge', startAngle: 200, endAngle: -20, min: 0, max: 320, center: ['50%', '60%'], radius: '98%',
       axisLine: { lineStyle: { width: 10, color: [[0.3, '#6B7280'], [0.7, '#FFBC0A'], [1, '#D99A00']] } },
       axisLabel: { color: '#FFBC0A', fontSize: 10, distance: 15, splitNumber: 4 }, splitLine: { length: 8 },
       detail: { formatter: '{value} 公里/小时', color: '#E4E5EB', fontSize: 13, offsetCenter: [0, '55%'] },
