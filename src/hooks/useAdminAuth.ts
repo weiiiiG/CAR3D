@@ -23,8 +23,6 @@ export function useAdminAuth() {
   const [loading, setLoading] = useState(true)
   const [token, setToken] = useState('')
 
-  const storeToken = useCallback((t: string) => setToken(t), [])
-
   useEffect(() => {
     fetch(API + '/auth/refresh', { method: 'POST', credentials: 'include' })
       .then(r => r.ok ? r.json() : null)

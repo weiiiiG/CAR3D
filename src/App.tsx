@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import ScenePage from './pages/ScenePage'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -21,7 +20,7 @@ function AdminApp() {
 
   return (
     <AuthCtx.Provider value={{ authFetch, canManage, userRole: user.role }}>
-      <AdminLayout menu={menu} canManage={canManage} onLogout={() => { fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {}); logout() }}>
+      <AdminLayout menu={menu} onLogout={() => { fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {}); logout() }}>
         <Routes>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />

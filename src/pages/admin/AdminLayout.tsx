@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, ReactNode } from 'react'
+import { useState, useCallback, createContext, useContext, type ReactNode } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from '../../components/admin/Sidebar'
 import '../../components/admin/layout.css'
@@ -6,9 +6,9 @@ import '../../components/admin/layout.css'
 const ToastCtx = createContext<(msg: string) => void>(() => {})
 export const useToast = () => useContext(ToastCtx)
 
-interface Props { children: ReactNode; menu: { id: string; label: string }[]; canManage: boolean; onLogout: () => void }
+interface Props { children: ReactNode; menu: { id: string; label: string }[]; onLogout: () => void }
 
-export default function AdminLayout({ children, menu, canManage, onLogout }: Props) {
+export default function AdminLayout({ children, menu, onLogout }: Props) {
   const [toast, setToast] = useState('')
   const showToast = useCallback((m: string) => { setToast(m); setTimeout(() => setToast(''), 3000) }, [])
   const navigate = useNavigate()

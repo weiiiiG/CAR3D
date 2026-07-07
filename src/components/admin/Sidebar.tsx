@@ -1,4 +1,3 @@
-import { ReactNode } from 'react'
 import './sidebar.css'
 
 interface Props { menu: { id: string; label: string }[]; page: string; onNav: (id: string) => void; onTo3D: () => void; onLogout: () => void }

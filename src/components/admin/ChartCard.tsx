@@ -1,4 +1,4 @@
-import { ReactNode, forwardRef } from 'react'
+import { type ReactNode } from 'react'
 import './chart-card.css'
 
 interface Props { title: string; children: ReactNode; small?: boolean }
