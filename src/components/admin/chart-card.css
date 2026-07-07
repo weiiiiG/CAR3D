@@ -1,6 +1,6 @@
 .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-.chart-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; height: 100%; min-height: 0; overflow: visible; }
-.chart-card h3 { font-family: var(--display); font-size: 16px; letter-spacing: .04em; margin-bottom: 8px; color: var(--ink-mute); }
-.chart-box { height: 280px; width: 100%; min-height: 0; }
-.chart-box-sm { height: 200px; width: 100%; min-height: 0; }
+.admin-chart-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; height: 100%; min-height: 0; overflow: visible; }
+.admin-chart-card h3 { font-family: var(--display); font-size: 16px; letter-spacing: .04em; margin-bottom: 8px; color: var(--ink-mute); }
+.admin-chart-box { height: 280px; width: 100%; min-height: 0; }
+.admin-chart-box-sm { height: 200px; width: 100%; min-height: 0; }
 @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } }
