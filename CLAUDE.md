@@ -28,15 +28,20 @@ npm run start:dev
 ├── src/
 │   ├── main.tsx              React DOM 入口
 │   ├── index.css             CSS 变量体系 + 赛道风格 UI（--bg / --surface / --accent）
-│   ├── App.tsx               主组件：场景初始化 + 6视角热点 + HUD + 面板 + 认证入口
+│   ├── App.tsx               主组件：场景初始化 + 6视角热点 + HUD + 注解面板抽屉 +
+│   │                           认证入口 + 视角覆盖管理 + 捕获模式 + ECharts 图表配置
 │   └── components/
-│       ├── Scene.tsx          Three.js 场景核心（GLTF 模型加载 + OrbitControls + GSAP ticker）
-│       ├── LoadingOverlay.tsx 加载过渡动画（logo + 进度条 + 文字逐行入场）
+│       ├── Scene.tsx          Three.js 场景核心（GLTF 模型加载 + OrbitControls +
+│       │                       GSAP ticker + 地面渐变融合 + 阴影优化 + 进度环动画）
+│       ├── LoadingOverlay.tsx 加载过渡动画（logo 逐字符入场 +
+│       │                       进度环逆时针 SVG stroke-dashoffset + 步骤文字）
 │       ├── HudBar.tsx         HUD 视角按钮栏（6个内置视角 + 重置 + 齿轮管理入口）
-│       ├── AnnotationPanel.tsx 注解面板（SVG 描边入场 + 数字递增 + ECharts 图表）
+│       ├── AnnotationPanel.tsx 注解面板（SVG 描边入场 + 数字递增 + ECharts 图表
+│       │                       + 侧边抽屉容器 + 展开/收起标签切换）
 │       ├── LoginModal.tsx    管理员 JWT 登录弹窗
-│       ├── CapturePanel.tsx  3D 坐标捕获面板（?capture= 模式从 admin 跳转取景）
-│       └── ViewManagerPanel.tsx 视角覆盖管理面板（CRUD overrides）
+│       ├── CapturePanel.tsx  3D 坐标捕获面板（?capture= 模式从 admin 跳转取景
+│       │                       + 保存到 API overrides）
+│       └── ViewManagerPanel.tsx 视角覆盖管理面板（CRUD overrides，前端的视角 CRUD）
 ├── public/
 │   └── admin.html            管理后台页面（完整 SPA，Dashboard / 视角 / 用户 / 车辆管理）
 ├── docs/                     文档体系
@@ -92,12 +97,16 @@ npm run start:dev
 | users | 三级 RBAC 用户 | username(UNIQUE), password(bcrypt), role(VARCHAR) |
 
 ## 核心工作流
-1. 页面加载 → Scene 组件初始化 Three.js（场景/相机/灯光/HDR环境贴图）→ GLTF 加载车身模型 → 创建 6 个 Hotspot 球体
-2. OrbitControls 自由视角 + gsap.ticker 驱动渲染循环
-3. 点击 HUD 按钮 → GSAP 飞镜到目标视角（power3.inOut 1.2s）+ AnnotationPanel SVG 描边动画 + ECharts 图表
-4. 特殊视角：doors 触发车门 GSAP 动画 / wheels 触发轮速仪表动画
-5. 齿轮图标 → LoginModal JWT 登录 → `location.href='/admin.html'` 跳转管理后台
-6. 管理后台 `?capture=<key>` → 打开 3D 页面进入捕获模式 → 自由调整视角 → 保存坐标到 localStorage → admin 页面读取
+1. 页面加载 → LoadingOverlay 入场动画（标题/分隔线/进度环逐行 fadeIn）→ Scene 初始化 Three.js
+2. 进度环独立 GSAP 动画 0→100（2.5s power1.inOut，延迟 0.75s 与环入场同步），XHR 仅控制步骤文字
+3. 模型加载完成后尾迹 0.35s 收尾到 100%，延迟 1s 后播放飞入轨道
+4. **首次访问**：环绕车身 4.5s 运镜 → 飞镜到默认 3/4 视角 → 加载界面淡出
+5. **管理后台返回**（sessionStorage/admin_return 或 ?capture= 或 referrer 含 admin.html）：跳过运镜，直接飞镜到默认视角
+6. OrbitControls 自由视角 + gsap.ticker 驱动渲染循环
+7. 点击 HUD 按钮 → GSAP 飞镜到目标视角（power3.inOut 1.2s）+ AnnotationPanel 侧边抽屉滑入 + SVG 描边入场 + ECharts 图表
+8. 特殊视角：doors 触发车门 GSAP 动画 / wheels 触发轮速仪表动画
+9. 齿轮图标 → LoginModal JWT 登录 → sessionStorage 标记 `admin_return=1` → 跳转管理后台
+10. 管理后台 `?capture=<key>` → 打开 3D 页面进入捕获模式 → 自由调整视角 → PUT /api/overrides/:key 保存到数据库 → 返回管理后台
 
 ## API 端点清单
 
@@ -157,6 +166,13 @@ feat: 新功能 / fix: 修复 / docs: 文档更新 / chore: 构建/工具 / refa
 4. **Scene 车门节点空安全**：如果 glTF 模型缺少 `door_lf_ok_0`/`door_rf_ok_1`，`dd[0]!.bq` 会崩溃。需加 `dd.length > 0` 守卫。
 5. **CSS 变量不要重复声明**：`--accent-dim` 被声明了两次，后值覆盖前值，可能造成阅读困惑。
 6. **React 19 RefObject 类型必须含 `| null`**：`useRef<HTMLDivElement>(null)` 返回 `RefObject<HTMLDivElement | null>`，组件接口必须写 `RefObject<HTMLDivElement | null>`，否则 `tsc -b` 构建失败（Vercel 部署常见）。
+7. **进度环必须独立于 XHR**：浏览器缓存会让 XHR `loaded/total` 瞬间变成 100%，导致进度环一跳到 90+。修复：进度环用独立 GSAP 动画 0→100（2.5s power1.inOut），XHR 仅控制步骤文字（INITIALIZING → LOADING ASSETS → CALIBRATING → SYSTEM READY）。
+8. **GSAP 并发 tween 导致数值回跳**：`tryPlay` 中 kill 主 tween 后用 `tail={v:progObj.v}` 新起 tween 追赶 100%。由于 `progObj.v` 与最后一次显示的 `setProg(Math.round(progObj.v))` 存在舍入偏差，画面先跳到 100 再回退到实际值。修复：用 `gsap.to(progObj, {overwrite:'auto'})` 直接操作同一对象，`onUpdate` 始终读取 `progObj.v`。
+9. **进度环动画必须与环入场同步**：进度环在 loading 时间线 0.75s 才开始淡入。如果 GSAP 动画从 0s 开始，环可见时已完成 30%+。修复：主进度动画加 `delay:0.75`。
+10. **SVG 圆环 stroke 起点方向**：CSS `rotate(-90deg)` 将 SVG 旋转后，水平镜像 `matrix(-1 0 0 1 100 0)` 的起点在底部。修复：垂直镜像 `matrix(1 0 0 -1 0 100)`，起点在顶部，逆时针填充。
+11. **管理后台返回运镜检测**：仅 `sessionStorage` 不可靠（可能跨页面类型丢失）。修复：三重检测 `sessionStorage.getItem('admin_return') || URL 含 ?capture= || document.referrer 含 admin.html`。
+12. **`pointer-events:none` 父级阻塞关闭按钮**：SVG 描边面板容器 `pointer-events:none` 阻止了 × 按钮点击。修复：`.panel-close { pointer-events: auto }`。
+13. **数据库 chartConfig 覆盖前端硬编码**：API 获取 `if(v.chartConfig)CO[v.key]=v.chartConfig` 会直接用旧英文数据覆盖精心调整的中文配置。修复：通过 PATCH API 将所有 6 条数据库记录的 chartConfig 更新为正确中文数据。
 
 ### 后端
 1. **PrismaService 硬编码数据库密码**：忽略 `.env` 的 `DATABASE_URL`。修复：`new pg.Pool({ connectionString: process.env.DATABASE_URL })`。

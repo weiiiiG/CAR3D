@@ -17,7 +17,8 @@ export default function LoadingOverlay({prog,loRef,ltRef,ldRef,prRef,lsRef}:Load
     <div className="loading-divider" ref={ldRef} style={{width:0,opacity:0}}/>
     <div className="progress-ring" ref={prRef}>
       <svg viewBox="0 0 100 100">
-        <circle className="progress-bg" cx="50" cy="50" r="34"/><circle className="progress-fill" cx="50" cy="50" r="34" style={{strokeDashoffset:dOff}}/>
+        <circle className="progress-bg" cx="50" cy="50" r="34"/>
+        <circle className="progress-fill" cx="50" cy="50" r="34" transform="matrix(1 0 0 -1 0 100)" style={{strokeDashoffset:dOff}}/>
       </svg><div className="progress-text">{prog}%</div>
     </div>
     <div className="loading-sublabel" ref={lsRef}>INITIALIZING</div>
