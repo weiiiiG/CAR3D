@@ -105,7 +105,5 @@ cd D:/threejs/3D/server && npm run start:dev # → http://localhost:3000
 6. **Prisma 7 Driver Adapter**：必须 `@prisma/adapter-pg` + `pg.Pool`，不能直接 `datasource.url`。
 7. **chartConfig 不能含 Function**：ECharts 回调函数无法 JSONB 序列化，用 `data: [{value, itemStyle:{color}}]`。
 
-@see [前端规范](docs/frontend/CLAUDE.md)
-@see [后端规范](docs/backend/CLAUDE.md)
-@see [API 端点](docs/backend/api.md)
-@see [数据库设计](docs/backend/database.md)
+@see docs/backend/api.md
+@see docs/backend/database.md
