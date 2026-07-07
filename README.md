@@ -236,4 +236,4 @@ D:/threejs/3D/
 
 ## 📜 开源许可
 
-MIT License © 2024
+MIT License © 2026
