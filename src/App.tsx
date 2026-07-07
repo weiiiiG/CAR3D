@@ -14,12 +14,6 @@ import './index.css'
 function AdminApp() {
   const { user, loading, menu, canManage, login, logout } = useAdminAuth()
 
-  useEffect(() => {
-    if (!loading && !user) {
-      // Redirect to login if no session, but LoginPage is rendered by AdminLayout
-    }
-  }, [loading, user])
-
   if (loading) return <div className="main" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}><span style={{ color: 'var(--ink-soft)', fontSize: 14 }}>加载中...</span></div>
   if (!user) return <LoginPage onLogin={login} />
 
