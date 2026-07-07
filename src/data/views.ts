@@ -38,7 +38,7 @@ export const CO: Record<string, any> = {
     series: [{ type: 'radar', data: [{ value: [9.2, 8.5, 9.0, 7.0, 8.5], name: '内饰评分' }], areaStyle: { color: 'rgba(255,188,10,0.28)' }, lineStyle: { color: '#FFBC0A', width: 2 }, itemStyle: { color: '#FFBC0A' } }],
   },
   doors: {
-    tooltip: { trigger: 'axis' }, grid: { left: 36, right: 18, top: 22, bottom: 30 },
+    tooltip: { trigger: 'axis' }, grid: { left: 36, right: 18, top: 28, bottom: 30 },
     xAxis: { type: 'category', data: ['碳纤维', '钢材', '铝合金'], axisTick: { length: 4, lineStyle: { color: 'rgba(228,229,235,0.18)' } }, axisLabel: { color: '#92949E', fontSize: 11, interval: 0, margin: 6 }, axisLine: { lineStyle: { color: 'rgba(228,229,235,0.18)' } } },
     yAxis: { type: 'value', splitNumber: 4, name: '公斤', nameTextStyle: { color: '#6B7280', fontSize: 10 }, axisLabel: { color: '#6B7280', fontSize: 10, margin: 4 }, splitLine: { lineStyle: { color: 'rgba(228,229,235,0.08)' } } },
     series: [{ type: 'bar', barMaxWidth: 28, data: [{ value: 2.7, itemStyle: { color: '#FFBC0A' } }, { value: 8.5, itemStyle: { color: '#6B7280' } }, { value: 5.1, itemStyle: { color: '#8B8FA0' } }], label: { show: true, position: 'top', color: '#FFBC0A', fontSize: 10, formatter: '{c}公斤' } }],
@@ -47,7 +47,7 @@ export const CO: Record<string, any> = {
     series: [{
       type: 'gauge', startAngle: 200, endAngle: -20, min: 0, max: 320, center: ['50%', '52%'], radius: '85%',
       axisLine: { lineStyle: { width: 10, color: [[0.3, '#6B7280'], [0.7, '#FFBC0A'], [1, '#D99A00']] } },
-      axisLabel: { color: '#FFBC0A', fontSize: 10, distance: 45, splitNumber: 4 }, splitLine: { length: 8 },
+      axisLabel: { color: '#FFBC0A', fontSize: 10, distance: 15, splitNumber: 4 }, splitLine: { length: 8 },
       detail: { formatter: '{value} 公里/小时', color: '#E4E5EB', fontSize: 13, offsetCenter: [0, '55%'] },
       title: { color: '#92949E', fontSize: 11, offsetCenter: [0, '35%'] },
       pointer: { showAbove: false },
