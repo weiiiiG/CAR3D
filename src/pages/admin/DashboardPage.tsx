@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const ch: echarts.ECharts[] = []
-    function init(id: HTMLDivElement | null, opt: any) { if (!id) return; const c = echarts.init(id); c.setOption(opt); ch.push(c) }
+    function init(id: HTMLDivElement | null, opt: any) { if (!id) return; const c = echarts.init(id); c.setOption(opt); c.resize(); ch.push(c) }
 
     fetch(API + '/dashboard').then(r => r.json()).catch(() => ({})).then(dash => {
       Promise.all([fetch(API + '/views'), fetch(API + '/overrides'), fetch(API + '/mock-vehicles')])

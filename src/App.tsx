@@ -9,25 +9,28 @@ import UsersPage from './pages/admin/UsersPage'
 import SettingsPage from './pages/admin/SettingsPage'
 import LoginPage from './pages/admin/LoginPage'
 import { useAdminAuth } from './hooks/useAdminAuth'
+import { AuthCtx } from './hooks/AuthContext'
 import './index.css'
 
 function AdminApp() {
-  const { user, loading, menu, canManage, login, logout } = useAdminAuth()
+  const { user, loading, menu, canManage, login, logout, authFetch } = useAdminAuth()
 
   if (loading) return <div className="main" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}><span style={{ color: 'var(--ink-soft)', fontSize: 14 }}>加载中...</span></div>
   if (!user) return <LoginPage onLogin={login} />
 
   return (
-    <AdminLayout menu={menu} canManage={canManage} onLogout={() => { fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {}); logout() }}>
-      <Routes>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="views" element={<ViewsPage />} />
-        <Route path="data" element={<DataPage />} />
-        {canManage && <Route path="users" element={<UsersPage />} />}
-        <Route path="settings" element={<SettingsPage />} />
-      </Routes>
-    </AdminLayout>
+    <AuthCtx.Provider value={{ authFetch, canManage, userRole: user.role }}>
+      <AdminLayout menu={menu} canManage={canManage} onLogout={() => { fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {}); logout() }}>
+        <Routes>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="views" element={<ViewsPage />} />
+          <Route path="data" element={<DataPage />} />
+          {canManage && <Route path="users" element={<UsersPage />} />}
+          <Route path="settings" element={<SettingsPage />} />
+        </Routes>
+      </AdminLayout>
+    </AuthCtx.Provider>
   )
 }
 

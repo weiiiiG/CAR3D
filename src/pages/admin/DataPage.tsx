@@ -20,7 +20,7 @@ export default function DataPage() {
 
   useEffect(() => {
     const ch: echarts.ECharts[] = []
-    function init(el: HTMLDivElement | null, opt: any) { if (!el) return; const c = echarts.init(el); c.setOption(opt); ch.push(c) }
+    function init(el: HTMLDivElement | null, opt: any) { if (!el) return; const c = echarts.init(el); c.setOption(opt); c.resize(); ch.push(c) }
 
     fetch(API + '/mock-vehicles').then(r => r.json()).then(mock => {
       setData(mock); setLoading(false)
