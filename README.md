@@ -237,7 +237,3 @@ D:/threejs/3D/
 ## 📜 开源许可
 
 MIT License © 2024
-
----
-
-> 项目参考: [Hennessey Performance](https://hennesseyperformance.com/) — Venom GT
