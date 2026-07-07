@@ -1,3 +1,6 @@
+import { useRef, useEffect } from 'react'
+import gsap from 'gsap'
+
 interface AnnotationPanelProps{
   hot:string|null
   pnRef:React.RefObject<HTMLDivElement | null>
@@ -12,6 +15,10 @@ interface AnnotationPanelProps{
 export default function AnnotationPanel({hot,pnRef,chRef,hi,co,onClose,open,onToggle}:AnnotationPanelProps){
   if(!hot||!hi[hot])return null
   const isWheels=hot==='wheels'
+  const tabRef=useRef<HTMLButtonElement>(null)
+  useEffect(()=>{
+    if(tabRef.current)gsap.fromTo(tabRef.current,{opacity:0},{opacity:1,duration:0.35,delay:0.55,ease:'power2.out'})
+  },[hot])
   return(<div className={`ann-drawer${isWheels?' drawer-left':''}`}>
     <div className={`ann-drawer-content${open?' open':''}`}>
       <div className={`annotation-panel${isWheels?' panel-left':''}`} ref={pnRef}>
@@ -32,7 +39,7 @@ export default function AnnotationPanel({hot,pnRef,chRef,hi,co,onClose,open,onTo
         </div>
       </div>
     </div>
-    <button className="ann-tab" onClick={onToggle} title={open?'隐藏':'展开'}>
+    <button className="ann-tab" ref={tabRef} onClick={onToggle} title={open?'隐藏':'展开'}>
       <span>{open?'›':'‹'}</span>
     </button>
   </div>)
