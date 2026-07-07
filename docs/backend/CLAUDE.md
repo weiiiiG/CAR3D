@@ -1,51 +1,100 @@
-# CLAUDE.md — 后 端 规 范
+# 后端规范 — CLAUDE.md
 
 ## 技术栈
-NestJS 11 + Prisma 7 + PostgreSQL 18 + pg
+NestJS 11 + Prisma 7 + PostgreSQL 18 + pg (node-postgres) + class-validator 0.15.x
 
 ## 启动
 ```bash
 cd server
-npm run start:dev    # 开发模式（自动加载 .env）
-# 管理后台: http://localhost:5180/admin（通过 Vite 代理）
-# 直接 API: http://localhost:3000/api
-默认用户: admin / super_admin / 密码 123456
+npm run start:dev      # 开发（watch）→ http://localhost:3000
+npm run start          # 生产
+npx prisma generate    # schema 变更后重新生成 client
+npx prisma db push     # 同步 schema 到数据库
 ```
 
-## 环境变量
-项目依赖 `.env` 文件中的环境变量：
+入口：`server/src/main.ts`（自动 `import 'dotenv/config'` 加载 `.env`）
 
-| 变量 | 说明 | 默认值 |
+## 目录结构
+```
+server/src/
+├── main.ts                 NestJS 启动（CORS: 5173+5180, cookie-parser, ValidationPipe）
+├── app.module.ts           根模块
+├── prisma/                 PrismaService (@Global 单例)
+├── auth/                   JWT 双 token + passport-jwt Strategy
+│   ├── auth.module.ts      JwtModule.register({secret: process.env.JWT_SECRET})
+│   ├── auth.controller.ts  /login /refresh /logout /me
+│   └── jwt.strategy.ts     secret 读 process.env
+├── users/                  三级 RBAC CRUD
+├── views/                  视角 CRUD + overrides 覆盖合并
+│   └── views.service.ts    findAll 合并 override → effectivePos/effectiveTarget
+├── dashboard/              ECharts 配置 CRUD（JSONB 存取）
+├── mock-vehicles/          12 台竞品车型数据
+└── seed/                   reSeed 全部 5 张表
+```
+
+## API 端点
+
+| 组 | 方法 | 路径 |
 |---|---|---|
-| `DATABASE_URL` | PostgreSQL 连接字符串 | `postgresql://postgres:123456@localhost:5432/car3d_admin` |
-| `JWT_SECRET` | JWT 签名密钥 | `car3d_jwt_secret_2026` |
+| Auth | POST | `/api/auth/login` / `refresh` / `logout` |
+| Auth | GET | `/api/auth/me` |
+| Users | GET/POST/PATCH/DELETE | `/api/users[/:id]` |
+| Views | GET/POST/PATCH/DELETE | `/api/views[/:key]` |
+| Overrides | GET | `/api/overrides` |
+| Overrides | PUT/DELETE | `/api/overrides/:viewKey` |
+| Dashboard | GET/PUT | `/api/dashboard[/:key]` |
+| MockVeh | GET/POST/DELETE | `/api/mock-vehicles[/:id]` |
+| System | POST | `/api/seed` |
 
-`.env` 文件在 `server/.env`，由 `server/src/main.ts` 中 `import 'dotenv/config'` 自动加载。
-Prisma CLI 使用 `schema.prisma` 的 datasource 配置指向同一数据库。
+完整端点说明 → [api.md](api.md)
+
+## 数据库模型（5 表）
+
+| 表 | 说明 | 关键字段 |
+|---|---|---|
+| `views` | 6 内置视角 + 自定义 | `key(PK)`, `posX/Y/Z`, `targetX/Y/Z`, `chartConfig(JSONB)`, `sortOrder`, `isActive` |
+| `view_overrides` | 管理员覆盖 | `viewKey(UNIQUE FK→views)`, `posX/Y/Z`, `targetX/Y/Z`, onDelete Cascade |
+| `dashboard_config` | ECharts 配置 | `key(PK)`, `data(JSON)` |
+| `mock_vehicles` | 12 竞品 | `name/brand/hp/torque/acceleration/topSpeed/engine/price` 等 |
+| `users` | RBAC 用户 | `username(UNIQUE)`, `password(bcrypt)`, `role(VARCHAR)` |
+
+详细字段 → [database.md](database.md)
+
+## 认证流程
+1. `POST /api/auth/login` → 验证 bcrypt → 生成 access_token(15min) + refresh_token(7d)
+2. access_token 放响应体 `{ access_token }`，refresh_token 设 `HttpOnly; SameSite=Strict; Path=/api/auth` Cookie
+3. 前端存 access_token 到内存变量，每个请求 `Authorization: Bearer <token>`
+4. 401 → 自动 `POST /api/auth/refresh` → Cookie 携带 → 新 access_token
+5. refresh 失败（Cookie 过期）→ 清除 Cookie，返回登录页
+6. 路由守卫：`@UseGuards(JwtAuthGuard)` Controller 级别
+
+## Seed 数据
+
+| 数据 | 数量 | 说明 |
+|---|---|---|
+| views | 6 | front/side/45/interior/doors/wheels 含 chartConfig |
+| users | 3 | admin(super_admin) / editor(admin) / viewer(user)，密码均为 123456 |
+| mock_vehicles | 12 | 燃油/混动/电动 竞品 |
+| dashboard_config | 若干 | 管理后台 ECharts 图表 |
+
+`POST /api/seed` 重新导入全部，deleteMany + createMany 覆盖 5 表。
 
 ## 模块规范
-- 每个功能模块一个目录：`auth/`, `users/`, `dashboard/`, `views/`, `mock-vehicles/`, `seed/`
-- 模块注册在 `app.module.ts` 的 `imports` 数组
-- 全局 PrismaService 由 `@Global()` PrismaModule 提供
-- JWT 路由守卫用 `@UseGuards(JwtAuthGuard)`，加到 Controller 级别
+- 每个模块一目录（auth/users/views/dashboard/mock-vehicles/seed）
+- 模块注册在 `app.module.ts` `imports` 数组
+- PrismaModule 用 `@Global()`，各模块直接注入 PrismaService
 
-## Prisma 使用约定
-- 所有数据库操作通过 `prisma` 服务（`PrismaService`）执行
-- 修改 schema 后执行 `npx prisma generate`
-- 生成代码在 `src/@generated/prisma-client/`
-- 新增模型：在 `prisma/schema.prisma` 添加 model → `prisma generate` → 创建 service/controller/module
+## 踩坑
+1. **PrismaService 硬编码密码**：`new pg.Pool({ connectionString: process.env.DATABASE_URL })`
+2. **JWT 密钥硬编码**：`process.env.JWT_SECRET || 'fallback'`
+3. **chartConfig 不能含 Function**：ECharts 回调无法 JSON 序列化
+4. **Prisma 7 Driver Adapter**：必须 `@prisma/adapter-pg` + `pg.Pool` 实例化
+5. **class-validator 版本**：0.14+ 含 ESM-only 依赖，锁定 0.15.x
+6. **生成路径**：Prisma Client output 必须在 `src/` 内，否则 NestJS 不编译到 dist
+7. **CORS Cookie**：后端 `credentials: true` + 前端 `credentials: 'include'` 缺一不可
+8. **reSeed 完整**：deleteMany 需覆盖全部 5 表，不可遗漏
+9. **管理后台登录闪烁**：先 refresh → 成功则仪表盘，失败才 showLogin
 
-## 已踩坑
-1. Prisma 7 + CJS: generated client.ts 含 `import.meta.url`，需替换为 `globalThis['__dirname'] = __dirname`
-2. PostgreSQL 列名大小写: Prisma schema 用 camelCase，SQL 中需双引号
-3. chartConfig 不能含 Function，seed 数据需移除 ECharts 回调函数
-4. dist 输出在 dist/src/，需 `node dist/src/main.js` 启动
-5. **class-validator 版本兼容**：class-validator 0.14+ 依赖 ESM-only 包，锁定 0.15.x
-6. **Prisma 7 强制需要 Driver Adapter**：通过 `@prisma/adapter-pg` + `pg.Pool`
-7. **Prisma Client 生成路径**：必须在 `src/` 目录内，否则 NestJS 不编译到 dist
-8. **JWT Refresh Token**：access_token 15min 放前端内存，refresh_token 7 天放 HttpOnly Cookie。`/api/auth/refresh` 用 Cookie 自动续期
-9. **CORS 与 Cookie**：`credentials: true` 必须同时在后端 `enableCors` 和前端 `fetch` 中设置，否则 HttpOnly Cookie 不会被浏览器发送
-10. **PrismaService 硬编码数据库密码**：原代码在 `prisma.service.ts` 中硬编码 `host/port/user/password`，忽略 `.env` 的 `DATABASE_URL`。修复：使用 `new pg.Pool({ connectionString: process.env.DATABASE_URL })`，并在 `main.ts` 添加 `import 'dotenv/config'`。
-11. **JWT 密钥硬编码**：`auth.module.ts` 和 `jwt.strategy.ts` 中 `secret` 硬编码字符串。修复：改用 `process.env.JWT_SECRET || 'fallback'`。
-12. **reSeed 不完整**：`seed.service.ts` 的 `reSeed()` 只重置 views + mock_vehicles，漏掉了 users 和 dashboard_config。修复：reSeed 中 deleteMany + createMany 覆盖全部 5 张表。
-13. **管理后台登录页闪烁**：`window.onload` 先 `showLogin()` 再 refresh，已登录用户看到登录页闪一下。修复：先 `fetch('/api/auth/refresh')`，成功则 `buildSidebar()`，失败才 `showLogin()`。
+@see [主 CLAUDE.md](../../CLAUDE.md)
+@see [API 端点](api.md)
+@see [数据库设计](database.md)

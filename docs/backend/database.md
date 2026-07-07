@@ -49,3 +49,25 @@
 | displacement | FLOAT | 排量 |
 | driveType | VARCHAR(50) | 驱动方式 |
 | category | VARCHAR(50) | 分类(燃油/混动/电动) |
+
+## 表: users
+
+| 列名 | 类型 | 说明 |
+|---|---|---|
+| id | SERIAL PK | |
+| username | VARCHAR(50) UNIQUE | 登录名 |
+| password | VARCHAR(200) | bcrypt 哈希 |
+| role | VARCHAR(20) | super_admin / admin / user |
+| createdAt / updatedAt | TIMESTAMP | 时间戳 |
+
+## 表: dashboard_config
+
+| 列名 | 类型 | 说明 |
+|---|---|---|
+| key | VARCHAR(50) PK | 配置标识 |
+| data | JSON | ECharts 图表配置 |
+
+## 关系
+```
+View (1) ──→ (N) ViewOverride (onDelete: Cascade)
+```

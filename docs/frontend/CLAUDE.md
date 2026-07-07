@@ -1,73 +1,89 @@
-# CLAUDE.md — 前 端 规 范
+# 前端规范 — CLAUDE.md
 
 ## 技术栈
-React 19 + Three.js 0.184 + GSAP 3.15 + ECharts 6 + Vite 8
+React 19 + TypeScript + Three.js 0.184 + GSAP 3.15 + ECharts 6 + Vite 8
 
 ## 启动
 ```bash
 cd D:/threejs/3D
-npm run dev          # 开发服务器 → localhost:5180
+npm run dev              # → http://localhost:5180
+npx tsc --noEmit         # 类型检查
 ```
 
-## 组件规范
-- 所有逻辑在 `App.tsx` 使用函数组件 + hooks
-- ref 管理：`useRef` 存储 Three.js/GSAP/ECharts 实例，cleanup 时 dispose
-- CSS 变量在 `index.css:root` 定义，组件用 `var(--xxx)` 引用
+## 项目结构
+
+```
+src/
+├── App.tsx              主组件：状态（hot/annOpen/overrides）+ 6 视角热点 + 面板入场动画
+├── index.css            CSS 变量 + 抽屉样式 + 加载环 + HUD + 管理面板
+├── main.tsx             React DOM 渲染入口
+└── components/
+    ├── Scene.tsx        Three.js 引擎
+    │   ├── 初始化场景/相机/PerspectiveCamera(38,fov,0.02,1000)/ACESFilmicToneMapping
+    │   ├── GLTFLoader 加载车身 + HDRLoader 环境贴图
+    │   ├── DirectionalLight(2048² 阴影) + HemisphereLight + PointLight
+    │   ├── 地面：径向渐变 CanvasTexture 背景层 + 反射层 + 软阴影圈
+    │   ├── OrbitControls + gsap.ticker 渲染循环
+    │   ├── 6 Hotspot 球体 + 车门/车轮节点查找 + GSAP 动画
+    │   ├── 加载进度环 GSAP 独立 0→100 + 首次访问运镜 4.5s / 后台返回直飞
+    │   └── cleanup：disposed 守卫 + 事件移除 + GSAP kill + Three.js dispose
+    ├── LoadingOverlay.tsx  标题逐字符入场 + SVG 进度环（逆时针 stroke-dashoffset）+ 步骤文字
+    ├── HudBar.tsx          水平按钮栏（6 视角 + 重置 + 齿轮），首次点击 reveal
+    ├── AnnotationPanel.tsx 侧边抽屉容器
+    │   ├── .ann-drawer 定位 + .ann-drawer-content 滑动 + .ann-tab 切换标签
+    │   ├── SVG 描边边框 + 顶部 accent 色带 + 规格数字递增动画
+    │   └── ECharts 图表（雷达/柱状/饼图/仪表盘，350ms 延迟 init）
+    ├── LoginModal.tsx      模态遮罩 + JWT 登录 → sessionStorage 标记 + 跳转 admin
+    ├── CapturePanel.tsx    ?capture= 模式：实时坐标显示 + PUT API 保存
+    └── ViewManagerPanel.tsx 视角覆盖列表：跳转/更新/重置（mgmt-* CSS 类）
+```
+
+## State 管理
+- `hot`: `string | null` — 当前选中的视角 key。`setHot(null)` → `onComplete(()=>setHot(key))` 切换
+- `annOpen`: boolean — 注解抽屉展开/收起
+- `overrides`: `Record<string,{pos,target}>` — 从 API 拉取的视角覆盖数据
+- `prog`: number — 加载进度 0-100，用于 LoadingOverlay 渲染
+- `hudVisible`: boolean — 首次点击场景后 reveal HUD 栏
+- `captureKey`: `string | null` — URL `?capture=` 参数触发的捕获模式
+
+## 动画模式
+
+| 场景 | 方法 | 时长 | easing |
+|---|---|---|---|
+| 飞镜切换视角 | `gsap.to(cam.position)` + `gsap.to(ctrl.target)` | 1.2s | power3.inOut |
+| 重置视角 | 同上 | 1s | power3.inOut |
+| 首次运镜 | `orbitTL.to(orbAngle, {a: PI*2})` | 4.5s | power2.inOut |
+| 加载进度环 | `gsap.to(progObj, {v:100})` | 2.5s + 0.75s 延迟 | power1.inOut |
+| 收尾追赶 | `gsap.to(progObj, {v:100, overwrite:'auto'})` | 0.35s | power2.out |
+| 面板描边 | `gsap.fromTo(rect, {strokeDashoffset:1}, {strokeDashoffset:0})` | 0.5s | power2.inOut |
+| 面板内容 | `gsap.fromTo(inner, {opacity:0,y:8}, {opacity:1,y:0})` | 0.35s + 0.55s 延迟 | power2.out |
+| 标签渐入 | `gsap.fromTo(tabRef, {opacity:0}, {opacity:1})` | 0.35s + 0.55s 延迟 | power2.out |
+| 规格数字 | `gsap.to(proxy, {v:target})` | 0.9s + 0.65s 延迟 | power2.out |
+| 车门开 | `dTlRef.current.to(ds, {lf:degToRad(62)})` | 1.5s | back.out(1.3) |
+| 车轮转 | `gsap.to(wsDataRef, {speed:14})` | 1.8s | power2.out |
+
+## ECharts 使用
+- 每次 `hot` 变化：`dispose()` → 350ms 延迟 → `init(chRef.current)` → `setOption(CO[hot])`
+- chartConfig 存储在数据库 JSONB，启动时 API 拉取覆盖 CO 硬编码
+- **不可用函数回调**（无法 JSON 序列化），颜色用 `data: [{value, itemStyle:{color}}]`
+- 雷达图 center `['50%','52%']`，仪表盘 startAngle `200` endAngle `-20`
 
 ## Three.js 注意事项
-- Scene 组件使用 `useEffect` 初始化，不要在子组件中用 `useGSAP({scope: parentRef})`，GSAP 上下文无法跨组件传递
-- 模型遍历 `scene.traverse` 释放 geometry/material
-- 点光/方向光不需要手动 dispose。`HDRLoader` 不需要 `PMREMGenerator`
-- `RGBELoader` 已废弃，改用 `HDRLoader`，直接 `loader.load()` 返回的 texture 设 `mapping = EquirectangularReflectionMapping` 即可
+- `Scenes.ts` useEffect 中初始化，cleanup 需：`gsap.ticker.remove(tick)` + `ctrl.dispose()` + `re.dispose()` + 遍历 dispose geometry/material
+- 阴影：`PCFShadowMap` + 2048² + 紧贴 shadow.camera frustum 减少锯齿
+- 地面：Canvas 径向渐变纹理（背景层 `MeshBasicMaterial` + 反射层 `MeshStandardMaterial` + 软阴影 `MeshBasicMaterial`）
+- HDR：`HDRLoader` 直接设 `scene.environment`，不需 PMREMGenerator
 
-## GSAP 管理
-- timeline 用 `useRef` 存储
-- unmount 时 `kill()` 所有 timeline/tween
-- 加载动画用 `gsap.timeline` + `onComplete` 回调控制流程（文字动画播完 → 模型就绪 → 延迟 1s → 轨道动画）
-- `contextSafe` 移除后注意清理多余括号
+## API 调用
+- 模块级 `fetch('/api/views')` 拉取视角数据覆盖 CO/HI，需 `.catch(()=>{})` 防未捕获异常
+- overrides 通过 `fetch('/api/overrides')` + `PUT /api/overrides/:key` CRUD
+- CapturePanel 直接 `fetch('/api/overrides/'+key, {method:'PUT'})`
 
-## ECharts
-- 每次 `hot` 变化：先 `dispose()` 旧实例 → `init()` 新实例
-- chart 容器在 `useRef` 中追踪
+## 捕获工作流
+1. 管理后台 → 新窗口打开 `/?capture=<key>`
+2. 前端 `URLSearchParams.get('capture')` → `setCaptureKey(key)`
+3. 定时 200ms 读取 `cam.position` → 显示坐标
+4. 保存：`PUT /api/overrides/:key` + `sessionStorage.setItem('admin_return','1')` → 跳回 admin
+5. 关闭：同上但跳过保存
 
-## CSS 变量体系
-- `--bg`: 页面底色 `#0A0B10`
-- `--surface`: 卡片/面板底色 `#14161E`
-- `--accent`: 赛道黄 `#FFBC0A`
-- `--display`: Bebas Neue 显示字体
-- `--sans`: Inter 正文字体
-
-## Git 提交格式
-```
-feat: 新功能 / fix: 修复 / docs: 文档 / chore: 构建/工具 / refactor: 重构
-```
-
-## 认证规范
-- JWT access_token 存在内存变量（`adminToken`），**不持久化到 localStorage**
-- refresh_token 由后端 HttpOnly Cookie 管理，前端不可读
-- 所有 API 通过 `fetchAuth()` 调用，自动处理 401 → refresh → 重试
-- 管理后台启动时先尝试 `/api/auth/refresh` 静默恢复会话，成功则直接进入仪表盘，失败才显示登录页
-- API 使用相对路径 `/api`（非 `http://localhost:3000/api`），确保 Cookie 同域名生效
-
-## API 路径规范
-- 所有前端组件使用**相对路径** `const API_BASE = '/api'`，通过 Vite 代理转发到 `localhost:3000`（而非硬编码 `http://localhost:3000/api`）
-- 这确保 HttpOnly Cookie 在 same-site 下正确发送，避免 CORS 和端口不一致问题
-
-## 踩坑记录
-
-1. **HMR 后 GSAP timeline 重复执行**：Vite HMR 更新组件时，`useGSAP` 的 cleanup 可能未正确销毁旧 timeline，导致多次初始化。确保 `useRef` 存储的 timeline 在 cleanup 中执行 `kill()`。
-2. **Overlay z-index 层级**：
-   - LoadingOverlay: `z-index: 100`
-   - LoginModal / ViewManagerPanel: `z-index: 50`
-   - Toast 提示: `z-index: 200`
-   - 确保 Toast 始终在最顶层。
-3. **OrbitControls 与弹窗交互冲突**：弹窗（AnnotationPanel / LoginModal）打开时，OrbitControls 仍然响应鼠标事件，导致视角误操作。解决方案：弹窗显示时调用 `ctrlRef.current.enabled = false`，关闭时恢复 `true`。
-4. **`useGSAP` 不能跨组件传递 scope**：子组件的 `useGSAP({scope: parentRef})` 会导致 GSAP 上下文无法正确初始化，回调被跳过。Three.js 场景初始化不需要 GSAP 上下文管理，应使用 `useEffect` 替代 `useGSAP`。
-5. **`contextSafe` 移除后残留括号**：去掉 `contextSafe((fn)=>{...})` 后多一个 `)`，Vite 编译时报 "Expected a semicolon" 错误。加载器回调参数括号需同步清理。
-6. **RGBELoader 已废弃**：Three.js 0.184 中 `RGBELoader` 替换为 `HDRLoader`。旧用法需 PMREMGenerator 处理，新用法直接 `HDRLoader.load()` 返回的 texture 设置 `mapping = EquirectangularReflectionMapping` 即可作为 `scene.environment`。
-7. **`switchPage` 与内联 `display:none` 冲突**：`showLogin()` 用 `p.style.display='none'` 隐藏页面，但 `switchPage` 之前只操作 CSS class，class 无法覆盖内联样式。修复：`switchPage` 中改用 `p.style.display='block'|'none'` 控制。
-8. **`window.open` vs `location.href`**：导航必须在同一标签页时不要用 `window.open(url,'_blank')`，改用 `location.href=url`。特别是「返回 3D 展示」和管理后台入口按钮。
-9. **LoginModal 不能存储 token 到 localStorage**：违反安全设计，access_token 应仅在内存变量中传递。登录成功后由管理后台的 refresh_token cookie 自行换取新 token。
-10. **ECharts 配置中不能使用函数回调**：doors 柱状图曾用 `itemStyle:{color:(p)=>[...][p.dataIndex]}` 函数回调，但 chartConfig 会存入数据库 JSONB 列，函数无法序列化。改用 `data: [{value, itemStyle:{color}}]` 每项独立颜色。
-11. **管理后台登录页闪烁**：`window.onload` 先调 `showLogin()` 再发 refresh 请求，导致已登录用户看到登录页闪一下。修复：先尝试 refresh（页面保持空白），失败才显示登录页。
-12. **React 19 RefObject 类型兼容**：`useRef<HTMLDivElement>(null)` 返回 `RefObject<HTMLDivElement | null>`，组件接口声明 `RefObject<HTMLDivElement>` 会触发 TS2322 错误。所有接受 ref 的 props 必须声明为 `RefObject<HTMLDivElement | null>`（含 `| null`）。Vercel 等 CI 环境执行 `tsc -b` 会因此失败。
+@see [主 CLAUDE.md](../../CLAUDE.md)
