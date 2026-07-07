@@ -44,7 +44,7 @@ export default function DashboardPage() {
   }, [])
 
   return (
-    <div className="page active" style={{ animation: 'none' }}>
+    <>
       <PageHeader title="仪表盘" subtitle="Hennessy Venom GT · 数据管理后台" />
       <div className="stats-row">
         <StatsCard num={stats.views || '—'} label="视角总数" />
@@ -60,6 +60,6 @@ export default function DashboardPage() {
         <ChartCard title="材料分布"><div ref={pieRef} style={{ height: '100%' }} /></ChartCard>
         <ChartCard title="月度访问趋势"><div ref={trendRef} style={{ height: '100%' }} /></ChartCard>
       </div>
-    </div>
+    </>
   )
 }

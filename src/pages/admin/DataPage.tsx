@@ -40,7 +40,7 @@ export default function DataPage() {
 
   const sorted = data.slice().sort((a, b) => b.hp - a.hp)
   return (
-    <div className="page active" style={{ animation: 'none' }}>
+    <>
       <PageHeader title="数据概览" subtitle="所有视角数据的详细展示 + Mock 数据集" />
       <div className="charts-row" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
         <ChartCard title="马力对比" small><div ref={m1} style={{ height: '100%' }} /></ChartCard>
@@ -63,6 +63,6 @@ export default function DataPage() {
           ))}
         </DataTable>
       </div>
-    </div>
+    </>
   )
 }

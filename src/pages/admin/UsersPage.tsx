@@ -14,7 +14,7 @@ export default function UsersPage() {
   useEffect(() => { load() }, [])
 
   return (
-    <div className="page active" style={{ animation: 'none' }}>
+    <>
       <PageHeader title="用户管理" subtitle="添加和管理管理员账户" />
       <DataTable title="用户列表" cols={cols} addLabel="新增用户" onAdd={() => setModal(true)}>
         {users.map(u => (
@@ -44,6 +44,6 @@ export default function UsersPage() {
           </div>
         </AdminModal>
       )}
-    </div>
+    </>
   )
 }

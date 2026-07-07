@@ -32,7 +32,7 @@ export default function ViewsPage() {
   const set = (patch: Partial<Form>) => modal && setModal({ ...modal, form: { ...modal.form, ...patch } })
 
   return (
-    <div className="page active" style={{ animation: 'none' }}>
+    <>
       <PageHeader title="视角管理" subtitle="增删改查所有视角配置" />
       <DataTable title="视角列表" cols={cols} addLabel="新增视角" onAdd={() => setModal({ form: emptyForm() })}>
         {views.length === 0
@@ -83,6 +83,6 @@ export default function ViewsPage() {
           </div>
         </AdminModal>
       )}
-    </div>
+    </>
   )
 }

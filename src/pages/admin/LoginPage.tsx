@@ -18,7 +18,7 @@ export default function LoginPage({ onLogin }: Props) {
   }
 
   return (
-    <div className="page active" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
       <div style={{ width: 360, textAlign: 'center' }}>
         <div style={{ fontFamily: 'var(--display)', fontSize: 32, letterSpacing: '.06em', color: 'var(--ink)', marginBottom: 4 }}>CAR<span style={{ color: 'var(--accent)' }}>3D</span></div>
         <div style={{ fontSize: 12, color: 'var(--ink-mute)', marginBottom: 20 }}>管理后台</div>

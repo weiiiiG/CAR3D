@@ -7,7 +7,7 @@ const API = '/api'
 export default function SettingsPage() {
   const toast = useToast()
   return (
-    <div className="page active" style={{ animation: 'none' }}>
+    <>
       <PageHeader title="设置" subtitle="系统配置与管理" />
       <SettingsGroup title="数据库连接">
         <div className="setting-row"><span className="setting-label">地址</span><span className="setting-value">localhost:5432/car3d_admin</span></div>
@@ -25,6 +25,6 @@ export default function SettingsPage() {
         <div className="setting-row"><span className="setting-label">版本</span><span className="setting-value">v1.0.0</span></div>
         <div className="setting-row"><span className="setting-label">技术栈</span><span className="setting-value">React + Three.js + GSAP + NestJS + Prisma + PostgreSQL</span></div>
       </SettingsGroup>
-    </div>
+    </>
   )
 }
