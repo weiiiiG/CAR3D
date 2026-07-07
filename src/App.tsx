@@ -23,7 +23,7 @@ fetch(API_BASE+'/views').then(r=>r.json()).then((d:any[])=>{
     HI[v.key]={label:v.label,desc:v.description||'',spec:v.spec||''}
     if(v.chartConfig)CO[v.key]=v.chartConfig
   }
-})
+}).catch(()=>{})
 function loadOverrides():Record<string,{pos:number[];target:number[]}>{
   try{return JSON.parse(localStorage.getItem('car3d_view_overrides')||'{}')}catch{return{}}
 }
@@ -45,6 +45,7 @@ function App(){
   const hitRef=useRef<THREE.Mesh[]>([])
   const dTlRef=useRef<gsap.core.Timeline|null>(null),wsTweenRef=useRef<gsap.core.Tween|null>(null),mTlRef=useRef<gsap.core.Timeline|null>(null)
   const chartInst=useRef<echarts.ECharts|null>(null)
+  const hotRef=useRef<string|null>(null);hotRef.current=hot
 
   // 合并内置视角与用户覆盖
   const allViews=useRef<Record<string,{pos:number[];target:number[]}>>({...BUILTIN_VIEWS})
@@ -150,7 +151,8 @@ function App(){
   // ───── 面板入场动画 ─────
   useEffect(()=>{
     if(!hot)return
-    requestAnimationFrame(()=>{
+    const capturedHot=hot
+    const id=requestAnimationFrame(()=>{
       const r=pnRef.current?.querySelector('.panel-frame rect') as SVGRectElement|null
       const inner=pnRef.current?.querySelector('.panel-inner') as HTMLElement|null
       const stripe=pnRef.current?.querySelector('.panel-stripe') as HTMLElement|null
@@ -175,11 +177,13 @@ function App(){
         delay:0.65,
         ease:'power2.out',
         onUpdate:()=>{
+          if(hotRef.current!==capturedHot)return
           const formatted=dec>0?proxy.v.toFixed(dec):Math.round(proxy.v).toLocaleString('en-US')
           specEl.textContent=txt.replace(numMatch[0],formatted)
         }
       })
     })
+    return ()=>cancelAnimationFrame(id)
   },[hot])
 
   return(<div className="viewer" ref={ref}>

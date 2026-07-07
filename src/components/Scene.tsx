@@ -79,7 +79,8 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
     sx.fillStyle=sg;sx.fillRect(0,0,256,256)
     const shM=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sc3),transparent:true,depthWrite:false,opacity:0})
     const sh=new THREE.Mesh(new THREE.PlaneGeometry(8,8),shM);sh.rotation.x=-Math.PI/2;sh.position.y=0.002;sc.add(sh)
-    new HDRLoader().load(HDR_URL,(tex)=>{tex.mapping=THREE.EquirectangularReflectionMapping;sc.environment=tex},undefined,()=>{})
+    let disposed=false
+    new HDRLoader().load(HDR_URL,(tex)=>{if(disposed)return;tex.mapping=THREE.EquirectangularReflectionMapping;sc.environment=tex},undefined,()=>{})
 
     const ctrl=new OrbitControls(cam,re.domElement);ctrl.enableDamping=true;ctrl.dampingFactor=0.08;ctrl.minDistance=2.5;ctrl.maxDistance=25
     ctrl.maxPolarAngle=Math.PI/2-0.02
@@ -94,7 +95,8 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
       if(wsDataRef.current.speed!==0&&wrRef.current.length){wA.value+=wsDataRef.current.speed*dt;wD.setFromAxisAngle(X_AXIS,wA.value);for(const w of wrRef.current)w.node.quaternion.copy(w.bq).multiply(wD)}
       ctrl.update();re.render(sc,cam)
     };gsap.ticker.add(tick)
-    window.addEventListener('resize',()=>{const w=h.clientWidth,wh=h.clientHeight;cam.aspect=w/wh;cam.updateProjectionMatrix();re.setSize(w,wh)})
+    const onResize=()=>{const w=h.clientWidth,wh=h.clientHeight;cam.aspect=w/wh;cam.updateProjectionMatrix();re.setSize(w,wh)}
+    window.addEventListener('resize',onResize)
     // first click reveals UI
     const revealFn=()=>{onReveal();re.domElement.removeEventListener('pointerdown',revealFn)}
     re.domElement.addEventListener('pointerdown',revealFn)
@@ -193,10 +195,13 @@ export default function Scene({scopeRef,sceneRefs,setProg,loRef,ltRef,ldRef,prRe
         orbitTL.to([ltRef.current,ldRef.current,prRef.current,lsRef.current,document.querySelector('.loading-sub')],{opacity:0,y:-8,duration:0.25,stagger:0.025},1.2)
       }
       mTlRef.current=orbitTL;modelReady=true;tryPlay()
-    },onProgress,()=>{})
+    },onProgress,(e)=>console.error('GLTF load error',e))
 
     return()=>{
-      gsap.ticker.remove(tick);dTlRef.current?.kill();wsTweenRef.current?.kill();mTlRef.current?.kill();ctrl.dispose();re.dispose()
+      disposed=true
+      gsap.ticker.remove(tick);ct.kill();dTlRef.current?.kill();wsTweenRef.current?.kill();mTlRef.current?.kill();gsap.killTweensOf(progObj)
+      re.domElement.removeEventListener('pointerdown',revealFn);window.removeEventListener('resize',onResize)
+      ctrl.dispose();re.dispose()
       if(re.domElement.parentNode===h)h.removeChild(re.domElement);sc.traverse((m)=>{const x=m as THREE.Mesh;if(x.isMesh){x.geometry?.dispose();const ma=x.material;if(Array.isArray(ma))ma.forEach(y=>y.dispose());else ma?.dispose()}})
     }
   },[])
