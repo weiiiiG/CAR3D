@@ -1,0 +1,10 @@
+.sidebar { flex: 0 0 clamp(180px, 18vw, 220px); background: var(--surface); border-right: 1px solid var(--rule); padding: 24px 20px; display: flex; flex-direction: column; min-width: 0; height: 100vh; }
+.sidebar-brand { font-family: var(--display); font-size: 22px; letter-spacing: .06em; color: var(--ink); margin-bottom: 32px; }
+.sidebar-brand span { color: var(--accent); }
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
+.sidebar-nav a { padding: 10px 14px; border-radius: 4px; color: var(--ink-mute); text-decoration: none; font-size: 13px; font-weight: 500; transition: .15s; cursor: pointer; }
+.sidebar-nav a:hover, .sidebar-nav a.active { background: var(--accent-dim); color: var(--accent); }
+.sidebar-3d { padding: 10px 14px; border-radius: 4px; background: rgba(255,188,10,0.12); color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; transition: .15s; display: block; }
+.sidebar-3d:hover { background: var(--accent); color: var(--bg); }
+.sidebar-status { margin-top: 6px; font-size: 11px; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+.sidebar-status .dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; display: inline-block; }
