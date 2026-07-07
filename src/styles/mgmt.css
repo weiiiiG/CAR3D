@@ -1,0 +1,49 @@
+/* 管理入口齿轮 */
+.mgmt-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: clamp(5px, 0.8vh, 7px) clamp(9px, 1vw, 11px); color: var(--ink-soft);
+}
+.mgmt-toggle:hover { color: var(--accent); }
+.mgmt-toggle svg { display: block; transition: transform 0.4s ease; }
+.mgmt-toggle:hover svg { transform: rotate(60deg); }
+
+/* 视角管理面板 */
+.mgmt-mask {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(5,6,10,0.7); backdrop-filter: blur(5px);
+  display: flex; align-items: center; justify-content: center;
+  animation: mgmt-fade 0.22s ease;
+}
+@keyframes mgmt-fade { from { opacity: 0; } to { opacity: 1; } }
+.mgmt-panel {
+  width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 48px);
+  overflow-y: auto; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 6px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+  padding: clamp(16px, 2.2vw, 24px);
+  animation: mgmt-pop 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes mgmt-pop { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+.mgmt-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.mgmt-title { font-family: var(--display); font-weight: 400; font-size: clamp(20px, 2vw, 26px); letter-spacing: 0.04em; color: var(--ink); }
+.mgmt-close { appearance: none; border: none; background: transparent; font-size: 24px; line-height: 1; color: var(--ink-soft); cursor: pointer; padding: 0 4px; transition: color 0.18s; font-weight: 300; }
+.mgmt-close:hover { color: var(--ink); }
+.mgmt-save { display: flex; gap: 8px; margin-bottom: 16px; }
+.mgmt-input { flex: 1; appearance: none; border: 1px solid var(--rule); border-radius: 4px; background: var(--bg); padding: 9px 12px; font-family: var(--sans); font-size: 12px; color: var(--ink); outline: none; transition: border-color 0.18s; }
+.mgmt-input:focus { border-color: var(--accent); }
+.mgmt-input::placeholder { color: var(--ink-soft); }
+.mgmt-save-btn { flex-shrink: 0; appearance: none; border: none; background: var(--accent); color: var(--bg-deep); font-family: var(--display); font-weight: 400; font-size: 13px; letter-spacing: 0.04em; padding: 0 16px; border-radius: 4px; cursor: pointer; transition: background 0.18s; white-space: nowrap; }
+.mgmt-save-btn:hover { background: #FFD446; }
+.mgmt-list { display: flex; flex-direction: column; gap: 6px; max-height: 40vh; overflow-y: auto; }
+.mgmt-empty { font-size: 12px; color: var(--ink-soft); text-align: center; padding: 18px 0; }
+.mgmt-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; }
+.mgmt-item-name { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mgmt-item-info { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.mgmt-item-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent-dim); background: var(--accent-dim); padding: 1px 6px; border-radius: 3px; line-height: 1.4; flex-shrink: 0; }
+.mgmt-item-acts { display: flex; gap: 6px; flex-shrink: 0; }
+.mgmt-mini { appearance: none; border: 1px solid var(--rule); background: var(--surface); color: var(--ink-mute); font-family: var(--sans); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 3px; cursor: pointer; transition: all 0.18s; }
+.mgmt-mini:hover { border-color: var(--accent); color: var(--accent); }
+.mgmt-mini.danger:hover { border-color: #EF4444; color: #EF4444; }
+.mgmt-foot { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.mgmt-export { width: 100%; appearance: none; border: 1px solid var(--rule); background: transparent; color: var(--ink-mute); font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 9px; border-radius: 4px; cursor: pointer; transition: all 0.18s; }
+.mgmt-export:hover { border-color: var(--accent); color: var(--accent); }

@@ -1,0 +1,22 @@
+:root {
+  --bg: #0A0B10;
+  --bg-deep: #05060A;
+  --surface: #14161E;
+  --ink: #F0F1F4;
+  --ink-mute: #9CA0B0;
+  --ink-soft: #5C5F6E;
+  --rule: rgba(240,241,244,0.08);
+  --accent: #FFBC0A;
+  --accent-deep: #D99A00;
+  --accent-dim: rgba(255,188,10,0.15);
+  --display: 'Bebas Neue', 'Black Ops One', 'Arial Black', sans-serif;
+  --sans: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body, #root {
+  height: 100%; width: 100%; margin: 0; padding: 0;
+  overflow: hidden; background: var(--bg); color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

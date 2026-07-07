@@ -10,7 +10,7 @@ cd D:/threejs/3D && npm run dev          # → http://localhost:5180
 # 后端（终端 2）
 cd D:/threejs/3D/server && npm run start:dev # → http://localhost:3000
 # 管理后台
-# http://localhost:5180/admin.html（Vite 多入口）
+# http://localhost:5180/admin（同一 React 应用内路由）
 ```
 
 默认用户: admin / 123456（super_admin）| editor / 123456（admin）| viewer / 123456（user）
@@ -23,6 +23,10 @@ cd D:/threejs/3D/server && npm run start:dev # → http://localhost:3000
 │   ├── App.tsx           主组件：状态管理 + 6 视角切换 + 入场动画
 │   ├── index.css         CSS 变量体系 + 赛道风格 UI（--bg / --surface / --accent）
 │   ├── main.tsx          React DOM 入口
+│   ├── styles/           CSS 模块（variables/viewer/loading/hud/annotation/mgmt/admin）
+│   ├── hooks/            自定义 hooks（useAdminAuth）
+│   ├── pages/
+│   │   └── admin/        管理后台页面组件（Dashboard/Views/Data/Users/Settings/Login）
 │   └── components/
 │       ├── Scene.tsx     Three.js 引擎：GLTF 模型/HDR/OrbitControls/地面融合/阴影
 │       ├── LoadingOverlay.tsx  加载环（SVG 逆时针 GSAP 独立动画）+ 标题入场
@@ -31,11 +35,7 @@ cd D:/threejs/3D/server && npm run start:dev # → http://localhost:3000
 │       ├── LoginModal.tsx      JWT 登录弹窗
 │       ├── CapturePanel.tsx    3D 坐标捕获（?capture= 模式 → API 保存）
 │       └── ViewManagerPanel.tsx 视角覆盖 CRUD 面板
-├── src/admin/            管理后台 SPA
-│   ├── index.html        HTML 入口
-│   ├── admin.css         独立样式文件
-│   ├── admin.js          ES 模块入口
-│   └── lib/              API/图表/CRUD 功能模块
+├── public/
 └── docs/
     ├── frontend/CLAUDE.md   前端专项规范
     └── backend/{CLAUDE.md,api.md,database.md}
@@ -50,7 +50,7 @@ cd D:/threejs/3D/server && npm run start:dev # → http://localhost:3000
 │   ├── mock-vehicles/    12 台竞品车型数据
 │   ├── seed/             初始化数据（6 视角 + 12 车辆 + 3 用户 + 仪表盘）
 │   └── prisma/           PrismaService @Global() 单例
-├── src/admin/          管理后台 SPA（src/admin/ 目录）
+├── src/                  管理后台（React 组件，同一应用内路由）
 └── docs/backend/{CLAUDE.md,api.md,database.md}
 ```
 

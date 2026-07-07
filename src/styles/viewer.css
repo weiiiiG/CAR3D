@@ -1,0 +1,24 @@
+.viewer { position: fixed; inset: 0; overflow: hidden; }
+.canvas-host { position: absolute; inset: 0; }
+.canvas-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 8; }
+.top-bar {
+  position: absolute; top: clamp(14px, 2.6vh, 28px); left: clamp(16px, 3vw, 40px); right: clamp(16px, 3vw, 40px);
+  display: flex; justify-content: space-between; align-items: baseline;
+  pointer-events: none; z-index: 10;
+}
+.brand {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(20px, 2.4vw, 32px); letter-spacing: 0.06em; color: var(--ink);
+}
+.model-tag {
+  font-family: var(--sans); font-weight: 600;
+  font-size: clamp(10px, 0.85vw, 12px); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.hint {
+  position: absolute; left: 50%; bottom: clamp(70px, 11vh, 86px);
+  transform: translateX(-50%); z-index: 5; pointer-events: none; white-space: nowrap;
+  font-family: var(--sans); font-weight: 500;
+  font-size: clamp(10px, 0.8vw, 11px); letter-spacing: 0.06em; color: var(--ink-soft); opacity: 0;
+}
+@media (max-width: 640px), (max-height: 480px) { .hint { display: none; } }
