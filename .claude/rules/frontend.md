@@ -46,3 +46,8 @@
 
 ## CSS 变量
 `--bg: #0A0B10` `--surface: #14161E` `--accent: #FFBC0A` `--display: 'Bebas Neue'` `--sans: 'Inter'`
+
+## 参考文档
+- 需要查看 API 端点定义、请求体格式 → 查阅 `docs/backend/api.md`
+- 需要查看数据库字段定义 → 查阅 `docs/backend/database.md`
+- 需要项目全局信息（启动、用户、环境变量）→ 查阅 `CLAUDE.md`

@@ -54,3 +54,8 @@
 3. 管理后台登录闪烁 → 先 refresh 再 showLogin
 4. CORS + Cookie → 两端 `credentials: true` 缺一不可
 5. 编译入口为 `dist/src/main.js`
+
+## 参考文档
+- 需要查具体 API 端点、请求体、返回值 → 查阅 `docs/backend/api.md`
+- 需要查数据库字段定义、类型约束 → 查阅 `docs/backend/database.md`
+- 新增端点或修改 schema 后，同步更新上述文档
