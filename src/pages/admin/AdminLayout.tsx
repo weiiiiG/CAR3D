@@ -1,7 +1,7 @@
 import { useState, useCallback, createContext, useContext, type ReactNode } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from '../../components/admin/Sidebar'
-import '../../components/admin/layout.css'
+import styles from '../../components/admin/layout.module.scss'
 
 const ToastCtx = createContext<(msg: string) => void>(() => {})
 export const useToast = () => useContext(ToastCtx)
@@ -22,9 +22,9 @@ export default function AdminLayout({ children, menu, onLogout }: Props) {
           onNav={(id) => navigate('/admin/' + id)}
           onTo3D={() => { sessionStorage.setItem('admin_return', '1'); window.location.href = '/' }}
           onLogout={onLogout} />
-        <div className="main">{children}</div>
+        <div className={styles.main}>{children}</div>
       </div>
-      {toast && <div className="toast"><span>{toast}</span></div>}
+      {toast && <div className={styles.toast}><span>{toast}</span></div>}
     </ToastCtx.Provider>
   )
 }

@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import './data-table.css'
+import './data-table.module.scss'
 
 interface Col { key: string; label: string; width?: number }
 interface Props { title: string; cols: Col[]; children: ReactNode; onAdd?: () => void; addLabel?: string }

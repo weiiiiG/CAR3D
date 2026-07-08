@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import './modal.css'
+import './modal.module.scss'
 
 interface Props { children: ReactNode; onClose: () => void }
 

@@ -1,5 +1,5 @@
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+:global(.stats-row) { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
 .stat-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; overflow: hidden; }
 .stat-card .stat-num { font-family: var(--display); font-size: 28px; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stat-card .stat-label { font-size: 11px; color: var(--ink-mute); margin-top: 2px; }
-@media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px) { :global(.stats-row) { grid-template-columns: repeat(2, 1fr); } }
