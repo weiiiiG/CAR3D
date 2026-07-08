@@ -43,7 +43,7 @@ export default function ScenePage() {
   useEffect(() => { allViews.current = { ...BUILTIN_VIEWS, ...overrides } }, [overrides])
 
   useEffect(() => {
-    if (hudVisible || !tbRef.current) return
+    if (!hudVisible || !tbRef.current) return
     gsap.fromTo(tbRef.current, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' })
   }, [hudVisible])
 
