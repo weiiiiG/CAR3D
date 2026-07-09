@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
           <div style={{ flex: 1, minHeight: 4 }} />
           <a className={sidebarStyles['sidebar-3d']} onClick={() => { sessionStorage.setItem('admin_return', '1'); window.location.href = '/' }}>返回 3D 展示</a>
-          <a className={sidebarStyles['sidebar-3d']} onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/admin' }}>退出登录</a>
+          <a style={{ background: 'rgba(239,68,68,0.12)', color: '#EF4444' }} className={sidebarStyles['sidebar-3d']} onClick={async () => { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); window.location.href = '/' }}>退出登录</a>
         </div>
         <div className={adminStyles.main}>{children}</div>
       </div>
