@@ -126,6 +126,7 @@ AWS_ROLE_ARN=arn:aws:iam::461073513124:role/Vercel/access-apg-cyan-kite
 15. **TypeScript 版本兼容**：Next.js 16 不兼容 TypeScript 7.x，需锁定 5.x。`erasableSyntaxOnly` 为 TS7 独有选项，TS5 下需移除。
 16. **Vercel 构建依赖**：`typescript` 和 `@types/*` 需放在 `dependencies` 而非 `devDependencies`，否则 Vercel 可能跳过安装导致构建失败。
 17. **src/views/ 而非 src/pages/**：不要使用 `src/pages/` 目录名，Next.js Pages Router 会将其识别为路由页面。Admin 页面组件放在 `src/views/admin/`，由 `src/app/admin/*/page.tsx` 通过 `dynamic` 导入。
+18. **禁止设置 NODE_ENV**：在 Vercel 项目设置或 `.env` 中手动设置 `NODE_ENV=production` 会导致 `next build` 异常（Next.js 自身管理 `NODE_ENV`，外部覆盖会破坏构建行为）。如需区分环境，使用自定义变量如 `APP_ENV`。
 
 ### 后端（Next.js API Routes）
 1. **Prisma Client 单例**：`globalThis` 缓存防止开发热重载创建多个连接。
