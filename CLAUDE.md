@@ -88,7 +88,20 @@ curl -X POST http://localhost:5180/api/seed
 ```
 DATABASE_URL=postgresql://postgres:123456@localhost:5432/car3d_admin
 JWT_SECRET=car3d_jwt_secret_2026
+
+# AWS RDS IAM 认证（部署时使用）
+PGHOST=aws-apg-cyan-kite.cluster-xxx.rds.amazonaws.com
+PGPORT=5432
+PGUSER=postgres
+PGDATABASE=postgres
+AWS_REGION=us-east-1
+AWS_ROLE_ARN=arn:aws:iam::461073513124:role/Vercel/access-apg-cyan-kite
 ```
+- 本地开发：Prisma 使用 `DATABASE_URL` 直连本地 PostgreSQL
+- 部署（Vercel）：Prisma 检测到 `PGHOST` 存在时自动切换 AWS RDS IAM 认证
+  - `@aws-sdk/rds-signer` 通过 OIDC 获取临时 token
+  - `@vercel/functions/oidc` 提供 AWS 凭据
+  - token 每 15 分钟自动刷新
 
 ## Git 提交格式
 `feat:` / `fix:` / `docs:` / `chore:` / `refactor:`
@@ -117,6 +130,7 @@ JWT_SECRET=car3d_jwt_secret_2026
 3. **reSeed 完整**：deleteMany 覆盖全部 5 表，chartConfig 不能含 Function。
 4. **Refresh Cookie**：HttpOnly + SameSite=Strict + Path=/api/auth，API Route 中手动解析 `cookie` header。
 5. **路由参数**：Next.js 15+ 使用 `params: Promise<{key: string}>` 异步解析。
+6. **AWS RDS IAM 认证**：Prisma 通过 `@prisma/adapter-pg` + pg.Pool 连接。部署时用 `@aws-sdk/rds-signer` 获取临时 token（15 分钟有效），开发时用 `DATABASE_URL` 直连。`src/lib/prisma.ts` 中 `createPool()` 根据 `PGHOST` 环境变量自动切换。
 
 @see docs/backend/api.md
 @see docs/backend/database.md

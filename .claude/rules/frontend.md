@@ -14,6 +14,11 @@
 - cleanup 中引用的变量必须在 useEffect 顶层作用域定义，不能在异步回调（`.then()`）内定义
 - 添加 `ErrorBoundary` 包裹可能抛出的组件，避免白屏崩溃
 
+## SCSS Modules
+- 所有 admin 组件 CSS 使用 `.module.scss` + CSS Modules（`import styles from './file.module.scss'`）
+- 组件专属类名自动 hash 防冲突，页面布局类（`.stats-row`、`.charts-row` 等）用 `:global()` 保持全局
+- 3D 场景样式在 `src/styles/` 下为全局 CSS，不与 admin 样式冲突
+
 ## Three.js 场景（Scene.tsx）
 - 场景初始化在 `useEffect` 中，cleanup 需：
   - `gsap.ticker.remove(tick)` + `ctrl.dispose()` + `re.dispose()`
