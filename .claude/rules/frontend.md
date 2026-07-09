@@ -2,6 +2,12 @@
 
 当编辑 `src/` 目录下的文件时自动加载。
 
+## Next.js 规范
+- 3D 场景页面使用 `'use client'` + `dynamic(() => import(), { ssr: false })`
+- 管理后台页面使用 `'use client'`（admin 全是客户端交互）
+- Three.js/GSAP/ECharts 组件必须禁用 SSR（`{ ssr: false }`）
+- 字体在 `src/app/layout.tsx` 的 `<head>` 中加载（Google Fonts）
+
 ## React 19 规范
 - `useRef(null)` 返回 `RefObject<T | null>`，props 接口必须写 `| null`
 - useEffect cleanup 必须释放所有资源（GSAP kill + 事件移除 + ECharts dispose + rAF cancel）
@@ -19,25 +25,24 @@
 - 阴影：`PCFShadowMap` + 2048² mapSize + 紧贴 shadow.camera frustum
 - 地面：Canvas 径向渐变纹理，背景层 + 反射层 + 软阴影圈三层叠加
 
-## 路由（react-router-dom）
-- `/` → `ScenePage`（3D 展示），`/admin/*` → `AdminApp`（管理后台）
-- 管理后台用嵌套 `<Routes>`：dashboard/views/data/users/settings
-- 侧边栏导航用 `navigate('/admin/' + id)` 绝对路径，防止路径叠加
-- 当前页检测用 `location.pathname.replace(/^\/admin\//, '')`
+## 路由（Next.js App Router）
+- `/` → `ScenePage`（3D 展示），`/admin/*` → `admin/layout.tsx` + 子页面
+- 管理后台页面在 `src/app/admin/*/page.tsx`，通过 `dynamic` 导入 admin 组件
+- 侧边栏导航用 `window.location.href = '/admin/' + id` 或 `next/navigation`
+- 当前页检测用 `usePathname()` 提取路径
 
 ## 管理后台组件结构
 ```
-AdminApp (useAdminAuth → AuthCtx.Provider)
-  └── AdminLayout (toast + sidebar + .main)
-       └── <Routes>
-            ├── DashboardPage → StatsCard + ChartCard + PageHeader
-            ├── ViewsPage     → DataTable + AdminModal + PageHeader
-            ├── DataPage      → ChartCard + DataTable + PageHeader
-            ├── UsersPage     → DataTable + AdminModal + PageHeader (authFetch)
-            └── SettingsPage  → SettingsGroup + PageHeader
+src/app/admin/layout.tsx (AdminLayout — 侧边栏 + ToastCtx)
+  └── children (page.tsx 内容)
+       ├── /admin/dashboard → DashboardPage → StatsCard + ChartCard + PageHeader
+       ├── /admin/views     → ViewsPage     → DataTable + AdminModal + PageHeader
+       ├── /admin/data      → DataPage      → ChartCard + DataTable + PageHeader
+       ├── /admin/users     → UsersPage     → DataTable + AdminModal + PageHeader
+       └── /admin/settings  → SettingsPage  → SettingsGroup + PageHeader
 ```
-- `AdminLayout` 提供 `ToastCtx`，子页面用 `useToast()` 调用
-- 认证 API 用 `AuthCtx` 的 `authFetch`（自动带 token + refresh）
+- AdminLayout 提供 `ToastCtx`，子页面用 `useToast()` 调用
+- API 调用直接用 `fetch('/api/...')`，无需代理配置
 
 ## GSAP 动画
 - 所有 timeline/tween 用 ref 存储，cleanup 中 `kill()`
@@ -48,25 +53,20 @@ AdminApp (useAdminAuth → AuthCtx.Provider)
 ## ECharts
 - 3D 展示页：`hot` 变化时 `dispose()` → 350ms 延迟 → `init()` → `setOption(CO[hot])`
 - 管理后台：`useEffect` 内 `init` + `setOption`，加 `window.addEventListener('resize', onResize)` 自适应
-- chart-box 容器需 `min-height: 0; height: 280px` 确保 grid 不裁切
 - **禁止在 chartConfig 中使用函数回调**，颜色用 `data: [{value, itemStyle:{color}}]`
 
 ## State 管理
 - `hot` + `annOpen`：hot ≠ null 时自动展开抽屉
-- 切换视角：`setHot(null)` 触发卸载 → `onComplete(()=>setHot(key))`
 - `hotRef.current = hot` 在 render 体设置，用于 stale 动画守卫
-- overrides 从 API 拉取 → `setOverrides` → `allViews.current` 合并
 
 ## 注解抽屉
 - `.ann-drawer` 定位 + `.ann-drawer-content` CSS transition 滑动 + `.ann-tab` 切换
 - `.panel-close` 需 `pointer-events: auto` 穿透父级
-- 左侧视图（wheels）：`.drawer-left` 类切换
 
 ## API
-- 全部用相对路径 `/api/*`，通过 Vite 代理转发
+- 全部通过 Next.js API Routes，与前端同端口（`/api/*`）
 - 管理后台返回：三重检测 `sessionStorage + URL params + document.referrer`
 - overrides：`PUT /api/overrides/:key` upsert + `DELETE` 还原
-- 用户 CRUD 等需要 token 的 API 通过 `authFetch()`（来自 AuthContext）
 
 ## CSS 变量
 `--bg: #0A0B10` `--surface: #14161E` `--accent: #FFBC0A` `--display: 'Bebas Neue'` `--sans: 'Inter'`

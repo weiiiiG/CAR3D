@@ -1,26 +1,25 @@
-# 后端规则
+# 后端规则（Next.js API Routes）
 
-当编辑 `server/` 目录下的文件时自动加载。
+当编辑 `src/app/api/` 或 `src/lib/` 目录下的文件时自动加载。
 
-## NestJS 模块规范
-- 每个功能一个目录（auth/users/views/dashboard/mock-vehicles/prisma/seed）
-- 模块注册在 `app.module.ts` `imports` 数组
-- PrismaModule `@Global()`，各模块直接注入 PrismaService
-- 路由守卫 `@UseGuards(JwtAuthGuard)` Controller 级别
-- class-validator 锁定 0.15.x（0.14+ 含 ESM-only 依赖）
+## API 路由规范
+- 每个端点对应 `src/app/api/{module}/{action}/route.ts`
+- 导出 `GET` / `POST` / `PATCH` / `PUT` / `DELETE` 函数
+- 路由参数使用 `params: Promise<{ key: string }>`（Next.js 15+ 异步）
+- 请求体用 `request.json()` 解析
 
 ## JWT 双 Token 认证
 - access_token（15 分钟）：放响应体 `{ access_token }`，前端内存变量保存
 - refresh_token（7 天）：设 `HttpOnly; SameSite=Strict; Path=/api/auth` Cookie
 - 401 续期：`POST /api/auth/refresh`，Cookie 自动携带
-- access_token 签名：`process.env.JWT_SECRET`，不用硬编码
-- refresh_token 存数据库或 Cookie 自身（本项目用 Cookie 自身）
+- 工具函数在 `src/lib/auth.ts`：`signAccessToken` / `verifyToken` / `setRefreshCookie`
 
 ## Prisma 使用
-- **必须使用 Driver Adapter**：`@prisma/adapter-pg` + `pg.Pool` 实例化，不能直接 datasource.url
-- `prisma generate` 后 client 输出在 `src/@generated/prisma-client/`（必须在 src/ 内）
+- 单例在 `src/lib/prisma.ts`，`globalThis` 缓存防止热重载多连接
+- **必须使用 Driver Adapter**：`@prisma/adapter-pg` + `pg.Pool` 实例化
+- `prisma generate` 输出到 `src/generated/`，导入用 `from '../generated/client'`
 - schema camelCase → SQL 自动转 snake_case（`@@map("view_overrides")`）
-- 新增 model：加 schema → `prisma generate` → 创建 service/controller/module
+- 新增 model：加 schema → `prisma generate` → 创建 API route
 
 ## 数据库
 - 5 表：views / view_overrides / dashboard_config / mock_vehicles / users
@@ -30,32 +29,39 @@
 - DashboardConfig: `key(PK) data(JSON)`
 
 ## Seed
-- `POST /api/seed`：deleteMany + createMany 覆盖全部 5 表，不可遗漏
+- `POST /api/seed`：deleteMany + createMany 覆盖全部 5 表
 - 初始化：6 视角 + 12 车辆 + 3 用户 + 仪表盘配置
 - chartConfig 中的 ECharts 配置**不能含 Function**
 
-## API 路径
-- 所有端点：`/api/auth/*` `/api/users/*` `/api/views/*` `/api/overrides/*` `/api/dashboard/*` `/api/mock-vehicles/*`
-- overrides：`PUT /api/overrides/:viewKey` upsert 语义
-- views：`GET` 返回时合并 override 为 `effectivePos/effectiveTarget`
-- CORS：前端 `localhost:5173` + `5180`，`credentials: true`
+## API 端点
+| 组 | 方法 | 路径 |
+|---|---|---|
+| Auth | POST | `/api/auth/login` / `refresh` / `logout` |
+| Auth | GET | `/api/auth/me` (Bearer) |
+| Views | GET/POST/PATCH/DELETE | `/api/views[/:key]` |
+| Overrides | GET/PUT/DELETE | `/api/overrides[/:viewKey]` |
+| Dashboard | GET | `/api/dashboard` |
+| MockVeh | GET | `/api/mock-vehicles` |
+| Users | GET/POST/PATCH/DELETE | `/api/users[/:id]` |
+| System | POST | `/api/seed` |
+
+完整端点说明 → [api.md](docs/backend/api.md)
 
 ## 环境变量
+`.env` 文件（Next.js 自动加载）:
 | 变量 | 说明 | 默认值 |
 |---|---|---|
 | `DATABASE_URL` | PostgreSQL 连接 | `postgresql://postgres:123456@localhost:5432/car3d_admin` |
 | `JWT_SECRET` | JWT 签名密钥 | `car3d_jwt_secret_2026` |
 
-`server/src/main.ts` 中 `import 'dotenv/config'` 自动加载 `.env`。
-
 ## 踩坑
-1. PrismaService 硬编码密码 → `new pg.Pool({ connectionString: process.env.DATABASE_URL })`
-2. reSeed 不完整 → deleteMany 覆盖全部 5 表
-3. 管理后台登录闪烁 → 先 refresh 再 showLogin
-4. CORS + Cookie → 两端 `credentials: true` 缺一不可
-5. 编译入口为 `dist/src/main.js`
+1. Prisma 7 需要显式 `output` 路径 → `prisma/schema.prisma` 中配置
+2. Prisma Client 导入路径 → `import { PrismaClient } from '../generated/client'`
+3. Next.js 路由参数 → `params: Promise<{key: string}>` 需要 await
+4. Refresh Cookie → 手动解析 `request.headers.get('cookie')` 提取
+5. reSeed → deleteMany 覆盖全部 5 表
+6. chartConfig 不能含 Function
 
 ## 参考文档
-- 需要查具体 API 端点、请求体、返回值 → 查阅 `docs/backend/api.md`
-- 需要查数据库字段定义、类型约束 → 查阅 `docs/backend/database.md`
-- 新增端点或修改 schema 后，同步更新上述文档
+- 需要查具体 API 端点、请求体、返回值 → `docs/backend/api.md`
+- 需要查数据库字段定义、类型约束 → `docs/backend/database.md`

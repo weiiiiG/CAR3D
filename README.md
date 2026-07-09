@@ -1,12 +1,12 @@
 # Hennessy Venom GT — 3D 交互式汽车展示系统
 
+[![Tech Stack](https://img.shields.io/badge/Next.js-16-000000?logo=next.js)]()
 [![Tech Stack](https://img.shields.io/badge/React-19-61DAFB?logo=react)]()
 [![Tech Stack](https://img.shields.io/badge/Three.js-0.184-000000?logo=three.js)]()
 [![Tech Stack](https://img.shields.io/badge/GSAP-3.15-88CE02?logo=greensock)]()
-[![Tech Stack](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs)]()
 [![Tech Stack](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql)]()
 
-> Hennessey Venom GT 的沉浸式 3D 展示页面，结合 **Three.js** 实时渲染、**GSAP** 电影级动画、**ECharts** 数据可视化与 **NestJS + Prisma** 管理后端。支持 6 个热点视角漫游、管理员后台、视角自定义覆盖。
+> Hennessey Venom GT 的沉浸式 3D 展示页面，结合 **Three.js** 实时渲染、**GSAP** 电影级动画、**ECharts** 数据可视化与 **Next.js + Prisma** 全栈架构。支持 6 个热点视角漫游、管理员后台、视角自定义覆盖。
 
 ![Preview](https://img.shields.io/badge/3D-Hennessy_Venom_GT-FFBC0A?style=for-the-badge)
 
@@ -29,11 +29,11 @@
 
 | 前端 | 后端 |
 |---|---|
-| **React 19** + TypeScript | **NestJS 11** |
-| **Three.js** 0.184 | **Prisma 7** ORM |
-| **GSAP** 3.15 + ScrollTrigger | **PostgreSQL** 18 |
-| **ECharts** 6 | **JWT** (Passport) |
-| **Vite** 8 | **pg** (node-postgres) |
+| **Next.js 16** (App Router) | **Prisma 7** ORM |
+| **React 19** + TypeScript | **PostgreSQL** 18 |
+| **Three.js** 0.184 | **JWT** (jsonwebtoken) |
+| **GSAP** 3.15 | **pg** (node-postgres) |
+| **ECharts** 6 | **bcryptjs** |
 
 ---
 
@@ -53,39 +53,35 @@
 CREATE DATABASE car3d_admin;
 ```
 
-修改 `server/.env` 中的数据库连接字符串：
+修改 `.env` 中的数据库连接字符串：
 
 ```env
 DATABASE_URL="postgresql://用户名:密码@localhost:5432/car3d_admin?schema=public"
 ```
 
-### 2. 启动后端
+### 2. 安装依赖
 
 ```bash
-cd server
 npm install
 npx prisma generate
 npx prisma db push
-npm run start:dev
-# API → http://localhost:3000/api
 ```
 
 ### 3. 初始化数据
 
 ```bash
-curl -X POST http://localhost:3000/api/seed
+curl -X POST http://localhost:5180/api/seed
 ```
 
 此命令导入：6 个默认视角 + 3 个默认用户 + 12 台竞品车辆 + Dashboard 配置。
 
-### 4. 启动前端
+### 4. 启动
 
 ```bash
-cd D:/threejs/3D
-npm install
 npm run dev
 # 前端 → http://localhost:5180
-# 管理后台 → http://localhost:5180/admin.html
+# 管理后台 → http://localhost:5180/admin
+# API → http://localhost:5180/api（与前端同端口）
 ```
 
 ### 5. 访问地址
@@ -93,8 +89,8 @@ npm run dev
 | 页面 | 地址 | 说明 |
 |---|---|---|
 | 3D 展示页 | `http://localhost:5180` | 主展示页面 |
-| 管理后台 | `http://localhost:5180/admin.html` | 通过 Vite 代理访问 |
-| 后端 API | `http://localhost:3000/api` | 直接访问 |
+| 管理后台 | `http://localhost:5180/admin` | 同一应用内路由 |
+| API 端点 | `http://localhost:5180/api` | Next.js API Routes |
 
 ---
 
@@ -112,35 +108,38 @@ npm run dev
 
 ```
 D:/threejs/3D/
-├── index.html                        # 入口 HTML（Bebas Neue / Inter 字体）
-├── vite.config.ts                    # Vite 配置（/api 代理 + /admin.html 路由重写）
 ├── src/
-│   ├── main.tsx                      # React 入口
-│   ├── App.tsx                       # 主组件（场景初始化 + 6 视角 + 热点交互 + 认证）
-│   ├── index.css                     # CSS 变量体系（赛道风格 UI）
-│   └── components/
-│       ├── Scene.tsx                 # Three.js 场景核心
-│       ├── LoadingOverlay.tsx        # 加载过渡动画
-│       ├── HudBar.tsx                # HUD 视角按钮栏
-│       ├── AnnotationPanel.tsx       # 注解数据面板
-│       ├── LoginModal.tsx            # 管理员 JWT 登录弹窗
-│       ├── CapturePanel.tsx          # 3D 坐标捕获面板
-│       └── ViewManagerPanel.tsx      # 视角覆盖管理面板
-├── public/
-│   └── admin.html                    # 管理后台 SPA
-├── docs/                             # 文档体系
-└── server/
-    ├── prisma/schema.prisma          # 数据库模型定义
-    └── src/
-        ├── main.ts                   # NestJS 启动入口（端口 3000）
-        ├── app.module.ts             # 根模块
-        ├── prisma/                   # PrismaService（全局单例）
-        ├── auth/                     # JWT 双 Token 认证
-        ├── users/                    # 用户 CRUD（三级 RBAC）
-        ├── dashboard/                # 仪表盘配置
-        ├── views/                    # 视角管理（含 override 覆盖合并）
-        ├── mock-vehicles/            # 竞品车辆数据
-        └── seed/                     # 初始化数据导入
+│   ├── app/
+│   │   ├── page.tsx                       # 3D 展示页
+│   │   ├── layout.tsx                     # Root Layout（字体 + 样式）
+│   │   ├── globals.css                    # 全局样式入口
+│   │   ├── admin/                         # 管理后台页面
+│   │   │   ├── layout.tsx                 # 后台布局（侧边栏）
+│   │   │   ├── dashboard/page.tsx         # 仪表盘
+│   │   │   ├── views/page.tsx             # 视角管理
+│   │   │   ├── data/page.tsx              # 数据概览
+│   │   │   ├── users/page.tsx             # 用户管理
+│   │   │   └── settings/page.tsx          # 设置
+│   │   └── api/                           # 后端 API Routes
+│   │       ├── auth/login/route.ts        # JWT 登录
+│   │       ├── auth/refresh/route.ts      # Token 刷新
+│   │       ├── auth/logout/route.ts       # 登出
+│   │       ├── auth/me/route.ts           # 当前用户
+│   │       ├── views/route.ts             # 视角 CRUD
+│   │       ├── overrides/route.ts         # 覆盖管理
+│   │       ├── dashboard/route.ts         # 仪表盘配置
+│   │       ├── mock-vehicles/route.ts     # 竞品车辆
+│   │       ├── users/route.ts             # 用户 CRUD
+│   │       └── seed/route.ts              # 数据初始化
+│   ├── components/                        # 通用组件
+│   ├── pages/                             # 3D 场景 + Admin 页面组件
+│   ├── lib/                               # 服务端工具（Prisma + JWT）
+│   ├── styles/                            # CSS 模块
+│   ├── data/views.ts                      # 图表配置硬编码
+│   └── generated/                         # Prisma Client 生成代码
+├── prisma/schema.prisma                   # 数据库模型定义
+├── .env                                   # 环境变量
+└── docs/                                  # 文档体系
 ```
 
 ---
@@ -153,7 +152,7 @@ D:/threejs/3D/
 │ 2. POST /api/auth/login                         │
 │    → 响应: { access_token } (JS 内存变量)       │
 │    → Cookie: refresh_token (HttpOnly, 7天)      │
-│ 3. location.href → /admin.html                  │
+│ 3. location.href → /admin                       │
 │ 4. Admin 页面启动 → POST /api/auth/refresh      │
 │    → Cookie 自动携带，换取新 access_token        │
 │ 5. 401 检测 → 自动调 refresh → 重试请求         │
