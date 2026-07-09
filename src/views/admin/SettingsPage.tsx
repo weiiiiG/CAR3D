@@ -1,6 +1,6 @@
 import PageHeader from '../../components/admin/PageHeader'
 import SettingsGroup from '../../components/admin/SettingsGroup'
-import { useToast } from './AdminLayout'
+import { useToast } from '../../hooks/useToast'
 
 const API = '/api'
 

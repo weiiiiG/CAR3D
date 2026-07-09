@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useCallback, createContext, useContext } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
-
-const ToastCtx = createContext<(msg: string) => void>(() => {})
-export const useToast = () => useContext(ToastCtx)
+import { useState, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
+import { ToastCtx } from '../../hooks/useToast'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState('')

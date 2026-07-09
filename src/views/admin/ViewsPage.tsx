@@ -3,7 +3,7 @@ import type { ViewData, OverrideData } from '../../hooks/useAdminAuth'
 import PageHeader from '../../components/admin/PageHeader'
 import DataTable from '../../components/admin/DataTable'
 import AdminModal from '../../components/admin/AdminModal'
-import { useToast } from './AdminLayout'
+import { useToast } from '../../hooks/useToast'
 
 const API = '/api'
 interface Form { key: string; label: string; specCategory: string; spec: string; description: string; posX: number; posY: number; posZ: number; targetX: number; targetY: number; targetZ: number }

@@ -3,7 +3,7 @@ import * as echarts from 'echarts'
 import PageHeader from '../../components/admin/PageHeader'
 import ChartCard from '../../components/admin/ChartCard'
 import DataTable from '../../components/admin/DataTable'
-import { useToast } from './AdminLayout'
+import { useToast } from '../../hooks/useToast'
 
 const API = '/api'
 const cols = [

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 
-const UsersPage = dynamic(() => import('@/pages/admin/UsersPage'), { ssr: false })
+const UsersPage = dynamic(() => import('@/views/admin/UsersPage'), { ssr: false })
 
 export default function Users() {
   return <UsersPage />

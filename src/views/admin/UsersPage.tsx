@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import PageHeader from '../../components/admin/PageHeader'
 import DataTable from '../../components/admin/DataTable'
 import AdminModal from '../../components/admin/AdminModal'
-import { useToast } from './AdminLayout'
+import { useToast } from '../../hooks/useToast'
 import { useAuth } from '../../hooks/AuthContext'
 
 const API = '/api'
