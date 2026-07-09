@@ -7,6 +7,8 @@
 - 管理后台页面使用 `'use client'`（admin 全是客户端交互）
 - Three.js/GSAP/ECharts 组件必须禁用 SSR（`{ ssr: false }`）
 - 字体在 `src/app/layout.tsx` 的 `<head>` 中加载（Google Fonts）
+- **不要使用 `src/pages/` 目录名**（Next.js Pages Router 会误识别）。组件放在 `src/views/`，App Router 页面通过 `dynamic(() => import('@/views/...'))` 导入
+- ToastCtx 在 `src/hooks/useToast.ts`，由 `app/admin/layout.tsx` 的 Provider 提供，子页面通过 `useToast()` 调用
 
 ## React 19 规范
 - `useRef(null)` 返回 `RefObject<T | null>`，props 接口必须写 `| null`

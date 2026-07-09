@@ -43,9 +43,9 @@ curl -X POST http://localhost:5180/api/seed
 │   │       ├── mock-vehicles/route.ts 竞品车辆
 │   │       ├── users/route.ts        用户 CRUD
 │   │       └── seed/route.ts         数据初始化
-│   ├── pages/
+│   ├── views/
 │   │   ├── ScenePage.tsx            3D 展示页（Three.js/GSAP/ECharts）
-│   │   └── admin/                   Admin 页面组件
+│   │   └── admin/                   Admin 页面组件（非路由，由 app/ 层 dynamic import）
 │   ├── components/                  通用 React 组件
 │   ├── hooks/                       自定义 Hooks
 │   ├── data/views.ts                HI/CO/BUILTIN_VIEWS/DEF
@@ -123,6 +123,9 @@ AWS_ROLE_ARN=arn:aws:iam::461073513124:role/Vercel/access-apg-cyan-kite
 12. **ErrorBoundary**：添加 `ErrorBoundary` 组件捕获渲染错误，避免白屏崩溃。
 13. **Three.js SSR 兼容**：Next.js 下 Three.js/GSAP/ECharts 需 `dynamic(() => import(...), { ssr: false })` 禁用 SSR，否则 `window is not defined`。
 14. **Prisma + Next.js 集成**：Prisma 7 需要显示 `output` 路径，导入用 `../generated/client`。
+15. **TypeScript 版本兼容**：Next.js 16 不兼容 TypeScript 7.x，需锁定 5.x。`erasableSyntaxOnly` 为 TS7 独有选项，TS5 下需移除。
+16. **Vercel 构建依赖**：`typescript` 和 `@types/*` 需放在 `dependencies` 而非 `devDependencies`，否则 Vercel 可能跳过安装导致构建失败。
+17. **src/views/ 而非 src/pages/**：不要使用 `src/pages/` 目录名，Next.js Pages Router 会将其识别为路由页面。Admin 页面组件放在 `src/views/admin/`，由 `src/app/admin/*/page.tsx` 通过 `dynamic` 导入。
 
 ### 后端（Next.js API Routes）
 1. **Prisma Client 单例**：`globalThis` 缓存防止开发热重载创建多个连接。

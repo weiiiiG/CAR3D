@@ -131,8 +131,16 @@ D:/threejs/3D/
 │   │       ├── mock-vehicles/route.ts     # 竞品车辆
 │   │       ├── users/route.ts             # 用户 CRUD
 │   │       └── seed/route.ts              # 数据初始化
-│   ├── components/                        # 通用组件
-│   ├── pages/                             # 3D 场景 + Admin 页面组件
+│   ├── views/                            # 页面组件（非路由，被 app/ dynamic import）
+│   │   ├── ScenePage.tsx                 # 3D 场景页
+│   │   └── admin/                        # 管理后台各页面组件
+│   │       ├── DashboardPage.tsx
+│   │       ├── ViewsPage.tsx
+│   │       ├── DataPage.tsx
+│   │       ├── UsersPage.tsx
+│   │       └── SettingsPage.tsx
+│   ├── components/                        # 通用组件（Scene/HudBar/AnnotationPanel/LoadingOverlay + admin/ 子组件）
+│   ├── hooks/                             # 自定义 Hooks（useAdminAuth + useToast）
 │   ├── lib/                               # 服务端工具（Prisma + JWT）
 │   ├── styles/                            # CSS 模块
 │   ├── data/views.ts                      # 图表配置硬编码
