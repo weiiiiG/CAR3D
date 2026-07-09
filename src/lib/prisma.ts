@@ -8,18 +8,27 @@ import { attachDatabasePool } from '@vercel/functions'
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined }
 
 function createPool(): Pool {
-  if (process.env.PGHOST && process.env.VERCEL) {
-    // AWS RDS IAM 认证
-    const signer = new Signer({
-      hostname: process.env.PGHOST!,
-      port: Number(process.env.PGPORT),
-      username: process.env.PGUSER!,
-      region: process.env.AWS_REGION!,
-      credentials: process.env.AWS_ROLE_ARN ? awsCredentialsProvider({
-        roleArn: process.env.AWS_ROLE_ARN,
-        clientConfig: { region: process.env.AWS_REGION },
-      }) : undefined,
-    })
+  const hasAwsKey = !!(process.env.AWS_ACCESS_KEY_ID || process.env.AWS_SECRET_ACCESS_KEY)
+  const hasAwsOidc = !!(process.env.AWS_ROLE_ARN && process.env.VERCEL)
+  if (process.env.PGHOST && (hasAwsKey || hasAwsOidc)) {
+    // AWS RDS IAM 认证（Vercel 用 OIDC，本地用 AWS_ACCESS_KEY_ID）
+    const signer = process.env.AWS_ROLE_ARN && process.env.VERCEL
+      ? new Signer({
+          hostname: process.env.PGHOST!,
+          port: Number(process.env.PGPORT),
+          username: process.env.PGUSER!,
+          region: process.env.AWS_REGION!,
+          credentials: awsCredentialsProvider({
+            roleArn: process.env.AWS_ROLE_ARN,
+            clientConfig: { region: process.env.AWS_REGION },
+          }),
+        })
+      : new Signer({
+          hostname: process.env.PGHOST!,
+          port: Number(process.env.PGPORT),
+          username: process.env.PGUSER!,
+          region: process.env.AWS_REGION!,
+        })
     const pool = new Pool({
       host: process.env.PGHOST,
       user: process.env.PGUSER,
@@ -29,10 +38,10 @@ function createPool(): Pool {
       ssl: { rejectUnauthorized: false },
       max: 20,
     })
-    attachDatabasePool(pool)
+    if (process.env.VERCEL) attachDatabasePool(pool)
     return pool
   }
-  // 本地开发
+  // 本地 PostgreSQL
   return new Pool({ connectionString: process.env.DATABASE_URL, max: 20, ssl: false })
 }
 
