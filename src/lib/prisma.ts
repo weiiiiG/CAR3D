@@ -8,7 +8,7 @@ import { attachDatabasePool } from '@vercel/functions'
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined }
 
 function createPool(): Pool {
-  if (process.env.PGHOST) {
+  if (process.env.PGHOST && process.env.VERCEL) {
     // AWS RDS IAM 认证
     const signer = new Signer({
       hostname: process.env.PGHOST!,
@@ -33,7 +33,7 @@ function createPool(): Pool {
     return pool
   }
   // 本地开发
-  return new Pool({ connectionString: process.env.DATABASE_URL, max: 20 })
+  return new Pool({ connectionString: process.env.DATABASE_URL, max: 20, ssl: false })
 }
 
 function createPrismaClient() {
