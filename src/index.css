@@ -1,7 +1,0 @@
-@import './styles/variables.css';
-@import './styles/viewer.css';
-@import './styles/loading.css';
-@import './styles/hud.css';
-@import './styles/annotation.css';
-@import './styles/mgmt.css';
-/* admin.css 仅在管理后台页面由 AdminLayout 组件按需导入 */
