@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [toast, setToast] = useState('')
   const showToast = useCallback((m: string) => { setToast(m); setTimeout(() => setToast(''), 3000) }, [])
   const pathname = usePathname()
-  const currentPage = pathname.replace(/^\/admin\//, '').split('/')[0] || 'dashboard'
+  const currentPage = (pathname ?? '').replace(/^\/admin\//, '').split('/')[0] || 'dashboard'
 
   return (
     <ToastCtx.Provider value={showToast}>

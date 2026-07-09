@@ -8,10 +8,12 @@
     "start": "next start --port 5180"
   },
   "dependencies": {
+    "@aws-sdk/rds-signer": "^3.1083.0",
     "@gsap/react": "^2.1.2",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/three": "^0.184.1",
+    "@vercel/functions": "^3.7.5",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "echarts": "^6.1.0",
