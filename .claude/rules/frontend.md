@@ -3,6 +3,7 @@
 当编辑 `src/` 目录下的文件时自动加载。
 
 ## Next.js 规范
+- 使用 `npm run dev`（即 `vercel dev`）启动开发服务器，模拟 Vercel 部署环境
 - 3D 场景页面使用 `'use client'` + `dynamic(() => import(), { ssr: false })`
 - 管理后台页面使用 `'use client'`（admin 全是客户端交互）
 - Three.js/GSAP/ECharts 组件必须禁用 SSR（`{ ssr: false }`）

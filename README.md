@@ -79,9 +79,8 @@ curl -X POST http://localhost:5180/api/seed
 
 ```bash
 npm run dev
-# 前端 → http://localhost:5180
+# 前端 + API → http://localhost:5180
 # 管理后台 → http://localhost:5180/admin
-# API → http://localhost:5180/api（与前端同端口）
 ```
 
 ### 5. 访问地址
