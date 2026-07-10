@@ -18,9 +18,6 @@
 - 单例在 `src/lib/prisma.ts`，`globalThis` 缓存防止热重载多连接
 - **必须使用 Driver Adapter**：`@prisma/adapter-pg` + `pg.Pool` 实例化
 - `prisma generate` 输出到 `src/generated/`，导入用 `from '../generated/client'`
-- **连接方式**：本地用 `DATABASE_URL` 直连，部署自动切换 AWS RDS IAM 认证
-  - IAM：`@aws-sdk/rds-signer` + `@vercel/functions/oidc`，token 15 分钟有效
-  - `createPool()` 根据 `PGHOST` 环境变量自动切换（`src/lib/prisma.ts`）
 - schema camelCase → SQL 自动转 snake_case（`@@map("view_overrides")`）
 - 新增 model：加 schema → `prisma generate` → 创建 API route
 
@@ -54,10 +51,8 @@
 `.env` 文件（Next.js 自动加载）:
 | 变量 | 说明 | 默认值 |
 |---|---|---|
-| `DATABASE_URL` | 本地 PostgreSQL 连接 | `postgresql://postgres:123456@localhost:5432/car3d_admin` |
+| `DATABASE_URL` | PostgreSQL 连接 | `postgresql://postgres:123456@localhost:5432/car3d_admin` |
 | `JWT_SECRET` | JWT 签名密钥 | `car3d_jwt_secret_2026` |
-| `PGHOST` | AWS RDS 主机（部署时自动设为 IAM） | — |
-| `AWS_ROLE_ARN` | Vercel OIDC 角色 ARN | — |
 
 ## 踩坑
 1. Prisma 7 需要显式 `output` 路径 → `prisma/schema.prisma` 中配置
