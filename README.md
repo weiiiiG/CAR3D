@@ -42,21 +42,16 @@
 ### 前置条件
 
 - Node.js >= 20
-- PostgreSQL 18（数据库 `car3d_admin`）
+- Neon PostgreSQL（免费注册 https://neon.tech）
 - npm
 
 ### 1. 数据库配置
 
-创建 PostgreSQL 数据库：
-
-```sql
-CREATE DATABASE car3d_admin;
-```
-
-修改 `.env` 中的数据库连接字符串：
+创建 Neon 项目，从 Dashboard 获取 `DATABASE_URL`，写入 `.env`：
 
 ```env
-DATABASE_URL="postgresql://用户名:密码@localhost:5432/car3d_admin?schema=public"
+DATABASE_URL="你的Neon连接字符串?sslmode=require"
+JWT_SECRET=car3d_jwt_secret_2026
 ```
 
 ### 2. 安装依赖
@@ -92,6 +87,48 @@ npm run dev
 | API 端点 | `http://localhost:5180/api` | Next.js API Routes |
 
 ---
+
+## 🌐 部署到 Vercel + Neon
+
+本项目前后端一体，可一键部署到 Vercel，搭配 Neon 云数据库：
+
+### 1. 创建 Neon 数据库
+
+1. 注册 https://neon.tech
+2. 创建项目，复制 `DATABASE_URL`（带 `?sslmode=require` 后缀）
+
+### 2. 配置 Vercel 环境变量
+
+在 Vercel 项目 → **Settings → Environment Variables** 中添加：
+
+| 变量 | 值 |
+|---|---|
+| `DATABASE_URL` | Neon 连接字符串（含 `?sslmode=require`） |
+| `JWT_SECRET` | `car3d_jwt_secret_2026` |
+
+### 3. 部署
+
+```bash
+# 安装 Vercel CLI
+npm i -g vercel
+
+# 登录
+vercel login
+
+# 部署
+vercel
+
+# 后续更新：推送到 GitHub 自动触发
+git push
+```
+
+### 4. 初始化数据
+
+部署完成后，访问 `/api/seed`（POST）填充初始数据：
+
+```bash
+curl -X POST https://你的项目.vercel.app/api/seed
+```
 
 ## 👤 默认用户
 
